@@ -66,19 +66,71 @@ AFRAME.registerComponent('mouse-rotate', {
 
         <!--We are saying load these assests and keep them there can be multiple models loaded -->
         <a-assets>
-            <!-- The first item the fire extinguisher so we load it and give it a name-->
             <a-asset-item
-                id="fireExtinguisher"
-                src="assets/models/fire_extinguisher_pack.glb">
+                id="co2Extinguisher"
+                src="assets/models/co2_silinder.glb">
             </a-asset-item>
+
+            <a-asset-item
+                id="foamExtinguisher"
+                src="assets/models/foam_silinder.glb">
+            </a-asset-item>
+
+            <a-asset-item
+                id="powderExtinguisher"
+                src="assets/models/powder_silinder.glb">
+            </a-asset-item>
+
+            <a-asset-item
+                id="waterExtinguisher"
+                src="assets/models/water_silinder.glb">
+            </a-asset-item>
+
+            <a-asset-item
+                id="wetChemicalExtinguisher"
+                src="assets/models/wet_chemical_silinder.glb">
+            </a-asset-item>
+
         </a-assets>
 
         <a-entity
-            gltf-model="#fireExtinguisher"
-            position="0 1 1"
-            scale="1 1 1"
-            mouse-rotate
-           >
+            gltf-model="#co2Extinguisher"
+            position="-2.2 0.15 -3"
+            rotation="0 0 0"
+            scale="2.2 2.2 2.2"
+            mouse-rotate>
+        </a-entity>
+
+        <a-entity
+            gltf-model="#foamExtinguisher"
+            position="-1.1 0.15 -3"
+            rotation="0 0 0"
+            scale="2.2 2.2 2.2"
+            mouse-rotate>
+        </a-entity>
+
+        <a-entity
+            gltf-model="#powderExtinguisher"
+            position="0 0.15 -3"
+            rotation="0 0 0"
+            scale="2.2 2.2 2.2"
+            mouse-rotate>
+        </a-entity>
+
+        <a-entity
+            gltf-model="#waterExtinguisher"
+            position="1.1 0.15 -3"
+            rotation="0 0 0"
+            scale="2.2 2.2 2.2"
+            mouse-rotate>
+        </a-entity>
+
+        <a-entity
+            gltf-model="#wetChemicalExtinguisher"
+            position="2.2 0.15 -3"
+            rotation="0 0 0"
+            scale="2.2 2.2 2.2"
+            mouse-rotate>
         </a-entity>
 
         <a-plane
@@ -86,8 +138,11 @@ AFRAME.registerComponent('mouse-rotate', {
             rotation="-90 0 0"
             width="20"
             height="10"
-            color="#CCCCCC">
+            color="#E7E7E7">
         </a-plane>
+
+        <a-entity light="type: ambient; intensity: 1.1"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="-1 2 1"></a-entity>
 
         <!--Users view point-->
         <!-- position of the camera of the user 0 1.2 2 means X = 0 , Y = 1.2 , Z = 2 -->
