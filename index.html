@@ -64,6 +64,10 @@ AFRAME.registerComponent('mouse-rotate', {
 
         <!--We are saying load these assests and keep them there can be multiple models loaded -->
         <a-assets>
+            <img
+                id="rackImage"
+                src="assets/images/background.jpg">
+
             <a-asset-item
                 id="co2Extinguisher"
                 src="assets/models/co2_silinder.glb">
@@ -84,12 +88,8 @@ AFRAME.registerComponent('mouse-rotate', {
                 src="assets/models/water_silinder.glb">
             </a-asset-item>
 
-            <a-asset-item
-                id="wetChemicalExtinguisher"
-                src="assets/models/wet_chemical_silinder.glb">
-            </a-asset-item>
-
         </a-assets>
+
 
         <!--Users view point-->
         <!-- position of the camera of the user 0 1.2 2 means X = 0 , Y = 1.2 , Z = 2 -->
@@ -100,43 +100,43 @@ AFRAME.registerComponent('mouse-rotate', {
         <a-entity
         mindar-image-target="targetIndex: 0">
 
+        
+                <a-image
+                    src="#rackImage"
+                    position="0 0 0"
+                    width="3.2"
+                    height="1.95">
+                </a-image>
+
                 <a-entity
                     gltf-model="#co2Extinguisher"
-                    position="-2.2 0.15 -3"
+                    position="-0.65 -0.7 0.5"
                     rotation="0 0 0"
-                    scale="2.2 2.2 2.2"
+                    scale="1.7 1.7 1.7"
                     mouse-rotate>
                 </a-entity>
 
                 <a-entity
                     gltf-model="#foamExtinguisher"
-                    position="-1.1 0.15 -3"
+                    position="-0.25 -0.7 0.5"
                     rotation="0 0 0"
-                    scale="2.2 2.2 2.2"
+                    scale="1.5 1.5 1.5"
                     mouse-rotate>
                 </a-entity>
 
                 <a-entity
                     gltf-model="#powderExtinguisher"
-                    position="0 0.15 -3"
+                    position="0.15 -0.7 0.5"
                     rotation="0 0 0"
-                    scale="2.2 2.2 2.2"
+                    scale="1.5 1.5 1.5"
                     mouse-rotate>
                 </a-entity>
 
                 <a-entity
                     gltf-model="#waterExtinguisher"
-                    position="1.1 0.15 -3"
+                    position="0.55 -0.7 0.5"
                     rotation="0 0 0"
-                    scale="2.2 2.2 2.2"
-                    mouse-rotate>
-                </a-entity>
-
-                <a-entity
-                    gltf-model="#wetChemicalExtinguisher"
-                    position="2.2 0.15 -3"
-                    rotation="0 0 0"
-                    scale="2.2 2.2 2.2"
+                    scale="1.5 1.5 1.5"
                     mouse-rotate>
                 </a-entity>
 
