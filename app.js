@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const target = document.getElementById("markerTarget");
 	const fireEntity = document.getElementById("fireEntity");
 	const startButton = document.getElementById("startFireButton");
+	const refreshButton = document.getElementById("refreshFireButton");
 	const fireModels = ["#co2Fire", "#dryPowderFire", "#foamFire", "#waterFire"];
 	const fireScales = {
 		"#co2Fire": "2.2 2.2 2.2",
@@ -108,29 +109,36 @@ document.addEventListener("DOMContentLoaded", () => {
 		"#waterFire": "0.2 0.2 0.2"
 	};
 
-	if (!target || !fireEntity || !startButton) {
+	if (!target || !fireEntity || !startButton || !refreshButton) {
 		return;
 	}
 
 	const resetFireState = () => {
 		fireEntity.setAttribute("visible", false);
 		startButton.hidden = true;
+		refreshButton.hidden = true;
 	};
 
-	target.addEventListener("targetFound", () => {
-		fireEntity.setAttribute("visible", false);
-		startButton.hidden = false;
-	});
-
-	target.addEventListener("targetLost", resetFireState);
-
-	startButton.addEventListener("click", () => {
+	const displayRandomFire = () => {
 		const randomModel = fireModels[Math.floor(Math.random() * fireModels.length)];
 		fireEntity.setAttribute("gltf-model", randomModel);
 		fireEntity.setAttribute("scale", fireScales[randomModel]);
 		fireEntity.setAttribute("visible", true);
 		startButton.hidden = true;
+		refreshButton.hidden = false;
+	};
+
+	target.addEventListener("targetFound", () => {
+		fireEntity.setAttribute("visible", false);
+		startButton.hidden = false;
+		refreshButton.hidden = true;
 	});
+
+	target.addEventListener("targetLost", resetFireState);
+
+	startButton.addEventListener("click", displayRandomFire);
+
+	refreshButton.addEventListener("click", displayRandomFire);
 
 	resetFireState();
 });

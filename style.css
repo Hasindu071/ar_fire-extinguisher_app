@@ -19,6 +19,36 @@
 	transform: translateX(-50%) scale(0.98);
 }
 
+.refresh-fire-button {
+	position: fixed;
+	left: 50%;
+	top: 95%;
+	transform: translate(-50%, -50%);
+	z-index: 20;
+	border: 0;
+	border-radius: 999px;
+	padding: 12px 24px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #ffffff;
+	background: #1976d2;
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+	transition: background 0.3s ease;
+}
+
+.refresh-fire-button[hidden] {
+	display: none !important;
+}
+
+.refresh-fire-button:hover {
+	background: #1565c0;
+}
+
+.refresh-fire-button:active {
+	transform: translate(-50%, -50%) scale(0.98);
+}
+
 a-scene canvas {
 	touch-action: none;
 }

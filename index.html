@@ -69,11 +69,6 @@ AFRAME.registerComponent('mouse-rotate', {
                 src="assets/images/background.jpg">
 
             <a-asset-item
-                id="fire"
-                src="assets/models/fire.glb">
-            </a-asset-item>
-
-            <a-asset-item
                 id="co2Fire"
                 src="assets/models/co2_fire.glb">
             </a-asset-item>
@@ -189,6 +184,7 @@ AFRAME.registerComponent('mouse-rotate', {
     </a-scene>
 
     <button id="startFireButton" class="start-fire-button" aria-label="Start fire" hidden>Start</button>
+    <button id="refreshFireButton" class="refresh-fire-button" aria-label="Refresh fire" hidden>🔄 New Fire</button>
 
     <script src="app.js"></script>
 
