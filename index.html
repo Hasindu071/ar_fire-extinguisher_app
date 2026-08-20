@@ -54,6 +54,9 @@ AFRAME.registerComponent('mouse-rotate', {
 
 <body>
 
+    <!-- Fire type label display at top -->
+    <div id="fireTypeLabel" class="fire-type-label" hidden></div>
+
     <!-- The container which holds the AR content -->
     <a-scene
         mindar-image="imageTargetSrc: ./fire_extinguishers.mind;"
@@ -106,6 +109,11 @@ AFRAME.registerComponent('mouse-rotate', {
             <a-asset-item
                 id="waterExtinguisher"
                 src="assets/models/water_silinder.glb">
+            </a-asset-item>
+
+            <a-asset-item
+                id="sprayForm"
+                src="assets/models/spray_form.glb">
             </a-asset-item>
 
         </a-assets>
@@ -184,7 +192,7 @@ AFRAME.registerComponent('mouse-rotate', {
     </a-scene>
 
     <button id="startFireButton" class="start-fire-button" aria-label="Start fire" hidden>Start</button>
-    <button id="refreshFireButton" class="refresh-fire-button" aria-label="Refresh fire" hidden>🔄 New Fire</button>
+    <button id="refreshFireButton" class="refresh-fire-button" aria-label="Refresh fire" hidden>New Fire</button>
 
     <script src="app.js"></script>
 

@@ -12,6 +12,9 @@ AFRAME.registerComponent("drag-extinguisher", {
 		this.targetPoint = new THREE.Vector3();
 		this.target = this.data.target;
 		this.canvas = this.el.sceneEl.canvas;
+		this.originalModel = this.el.getAttribute("gltf-model");
+		this.originalScale = this.el.getAttribute("scale");
+		this.isTransformed = false;
 
 		if (!this.target || !this.canvas) {
 			return;
@@ -24,6 +27,43 @@ AFRAME.registerComponent("drag-extinguisher", {
 		this.canvas.addEventListener("pointermove", this.onPointerMove);
 		this.canvas.addEventListener("pointerup", this.onPointerUp);
 		this.canvas.addEventListener("pointercancel", this.onPointerUp);
+	},
+
+	tick() {
+		// Check proximity on every frame
+		const fireEntity = document.getElementById("fireEntity");
+		
+		if (!fireEntity || !fireEntity.getAttribute("visible")) {
+			if (this.isTransformed) {
+				this.el.setAttribute("gltf-model", this.originalModel);
+				this.el.setAttribute("scale", this.originalScale);
+				this.isTransformed = false;
+			}
+			return;
+		}
+
+		// Get local positions (both on the marker target plane)
+		const cylinderLocalPos = this.el.getAttribute("position");
+		const fireLocalPos = fireEntity.getAttribute("position");
+
+		// Calculate 2D distance on the marker plane
+		const dx = cylinderLocalPos.x - fireLocalPos.x;
+		const dy = cylinderLocalPos.y - fireLocalPos.y;
+		const distance = Math.sqrt(dx * dx + dy * dy);
+
+		const proximityThreshold = 1.2;
+
+		if (distance < proximityThreshold && !this.isTransformed) {
+			this.el.setAttribute("gltf-model", "#sprayForm");
+			this.el.setAttribute("scale", "0.2 0.2 0.2"); // Smaller scale for spray_form
+			this.isTransformed = true;
+			console.log("✓ TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
+		} else if (distance >= proximityThreshold && this.isTransformed) {
+			this.el.setAttribute("gltf-model", this.originalModel);
+			this.el.setAttribute("scale", this.originalScale);
+			this.isTransformed = false;
+			console.log("✓ REVERTED TO ORIGINAL! Distance:", distance.toFixed(2));
+		}
 	},
 
 	setPointerPosition(event) {
@@ -99,6 +139,7 @@ AFRAME.registerComponent("drag-extinguisher", {
 document.addEventListener("DOMContentLoaded", () => {
 	const target = document.getElementById("markerTarget");
 	const fireEntity = document.getElementById("fireEntity");
+	const fireTypeLabel = document.getElementById("fireTypeLabel");
 	const startButton = document.getElementById("startFireButton");
 	const refreshButton = document.getElementById("refreshFireButton");
 	const fireModels = ["#co2Fire", "#dryPowderFire", "#foamFire", "#waterFire"];
@@ -108,6 +149,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		"#foamFire": "0.8 0.8 0.8",
 		"#waterFire": "0.2 0.2 0.2"
 	};
+	const fireTypes = {
+		"#co2Fire": "Electrical Box fire",
+		"#dryPowderFire": "chemical reaction Fire",
+		"#foamFire": "petrol Fire",
+		"#waterFire": "Wood Fire"
+	};
 
 	if (!target || !fireEntity || !startButton || !refreshButton) {
 		return;
@@ -115,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const resetFireState = () => {
 		fireEntity.setAttribute("visible", false);
+		fireTypeLabel.setAttribute("hidden", "");
 		startButton.hidden = true;
 		refreshButton.hidden = true;
 	};
@@ -124,6 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		fireEntity.setAttribute("gltf-model", randomModel);
 		fireEntity.setAttribute("scale", fireScales[randomModel]);
 		fireEntity.setAttribute("visible", true);
+		
+		// Update the fire type label at top
+		fireTypeLabel.textContent = fireTypes[randomModel];
+		fireTypeLabel.removeAttribute("hidden");
+		
 		startButton.hidden = true;
 		refreshButton.hidden = false;
 	};
