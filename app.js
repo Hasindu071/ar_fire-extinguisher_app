@@ -153,6 +153,20 @@ AFRAME.registerComponent("drag-extinguisher", {
 			statusLabel.classList.remove("error");
 			statusLabel.removeAttribute("hidden");
 			
+			// Get which extinguisher was used
+			const usedExtinguisherType = window.currentBroughtCylinderType;
+			
+			// Map extinguisher type to correct model entity
+			const correctModelMap = {
+				"co2": "correctFireBoxEntity",
+				"powder": "correctChemicalEntity",
+				"foam": "correctPetrolTankEntity",
+				"water": "correctFirecampEntity"
+			};
+			
+			const correctModelId = correctModelMap[usedExtinguisherType];
+			console.log("Showing correct model:", correctModelId, "for extinguisher type:", usedExtinguisherType);
+			
 			// Hide fire after 2 seconds
 			setTimeout(() => {
 				const fireEntity = document.getElementById("fireEntity");
@@ -160,9 +174,11 @@ AFRAME.registerComponent("drag-extinguisher", {
 				const fireTypeLabel = document.getElementById("fireTypeLabel");
 				const startFireButton = document.getElementById("startFireButton");
 				const refreshFireButton = document.getElementById("refreshFireButton");
+				const correctModelEntity = document.getElementById(correctModelId);
 				
 				if (fireEntity) fireEntity.setAttribute("visible", false);
 				if (ashEntity) ashEntity.setAttribute("visible", false);
+				if (correctModelEntity) correctModelEntity.setAttribute("visible", true);
 				if (fireTypeLabel) fireTypeLabel.setAttribute("hidden", "");
 				if (statusLabel) statusLabel.setAttribute("hidden", "");
 				statusLabel.classList.remove("success");
@@ -175,6 +191,11 @@ AFRAME.registerComponent("drag-extinguisher", {
 						el.components['drag-extinguisher'].hasCheckedFire = false;
 					}
 				});
+				
+				// Hide correct model after 3 more seconds
+				setTimeout(() => {
+					if (correctModelEntity) correctModelEntity.setAttribute("visible", false);
+				}, 3000);
 			}, 2000);
 		}
 	},
