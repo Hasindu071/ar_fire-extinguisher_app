@@ -1,6 +1,7 @@
 AFRAME.registerComponent("drag-extinguisher", {
 	schema: {
-		target: { type: "selector" }
+		target: { type: "selector" },
+		extinguisherType: { type: "string", default: "co2" }
 	},
 
 	init() {
@@ -12,9 +13,22 @@ AFRAME.registerComponent("drag-extinguisher", {
 		this.targetPoint = new THREE.Vector3();
 		this.target = this.data.target;
 		this.canvas = this.el.sceneEl.canvas;
+		
+		// Store original values
 		this.originalModel = this.el.getAttribute("gltf-model");
-		this.originalScale = this.el.getAttribute("scale");
+		const scaleAttr = this.el.getAttribute("scale");
+		// Parse scale properly
+		if (typeof scaleAttr === 'string') {
+			const parts = scaleAttr.split(' ');
+			this.originalScale = { x: parseFloat(parts[0]), y: parseFloat(parts[1]), z: parseFloat(parts[2]) };
+		} else {
+			this.originalScale = { x: scaleAttr.x, y: scaleAttr.y, z: scaleAttr.z };
+		}
+		console.log("Original scale stored:", this.originalScale);
+		
 		this.isTransformed = false;
+		this.extinguisherType = this.data.extinguisherType;
+		this.hasCheckedFire = false; // Flag to prevent multiple checks
 
 		if (!this.target || !this.canvas) {
 			return;
@@ -36,8 +50,10 @@ AFRAME.registerComponent("drag-extinguisher", {
 		if (!fireEntity || !fireEntity.getAttribute("visible")) {
 			if (this.isTransformed) {
 				this.el.setAttribute("gltf-model", this.originalModel);
-				this.el.setAttribute("scale", this.originalScale);
+				this.el.setAttribute("scale", `${this.originalScale.x} ${this.originalScale.y} ${this.originalScale.z}`);
 				this.isTransformed = false;
+				this.hasCheckedFire = false; // Reset flag when fire disappears
+				console.log("Fire disappeared - reverted to original scale:", this.originalScale);
 			}
 			return;
 		}
@@ -53,16 +69,128 @@ AFRAME.registerComponent("drag-extinguisher", {
 
 		const proximityThreshold = 1.2;
 
-		if (distance < proximityThreshold && !this.isTransformed) {
-			this.el.setAttribute("gltf-model", "#sprayForm");
-			this.el.setAttribute("scale", "0.2 0.2 0.2"); // Smaller scale for spray_form
-			this.isTransformed = true;
-			console.log("✓ TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
+		if (distance < proximityThreshold) {
+			// Extinguisher is close to fire
+			if (!this.isTransformed) {
+				// Store which cylinder was brought near (before transformation)
+				window.currentBroughtCylinderType = this.extinguisherType;
+				console.log("========================================");
+				console.log("Cylinder brought near fire!");
+				console.log("This component extinguisherType:", this.extinguisherType);
+				console.log("Storing type:", window.currentBroughtCylinderType);
+				console.log("========================================");
+				
+				this.el.setAttribute("gltf-model", "#sprayForm");
+				this.el.setAttribute("scale", "0.2 0.2 0.2"); // Smaller scale for spray_form
+				this.el.setAttribute("rotation", "0 270 0")
+				this.isTransformed = true;
+				console.log("✓ TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
+			}
+			
+			// Check if correct extinguisher is used on fire (only once)
+			if (!this.hasCheckedFire) {
+				console.log("About to check fire...");
+				this.hasCheckedFire = true;
+				this.checkFireExtinguished();
+			}
 		} else if (distance >= proximityThreshold && this.isTransformed) {
+			// Extinguisher moved away from fire
+			window.currentBroughtCylinderType = null; // Clear the stored type
 			this.el.setAttribute("gltf-model", this.originalModel);
-			this.el.setAttribute("scale", this.originalScale);
+			this.el.setAttribute("scale", `${this.originalScale.x} ${this.originalScale.y} ${this.originalScale.z}`);
 			this.isTransformed = false;
-			console.log("✓ REVERTED TO ORIGINAL! Distance:", distance.toFixed(2));
+			this.hasCheckedFire = false; // Reset flag when moving away
+			console.log("✓ REVERTED TO ORIGINAL! Distance:", distance.toFixed(2), "Scale:", this.originalScale);
+		}
+	},
+
+	checkFireExtinguished() {
+		const fireEntity = document.getElementById("fireEntity");
+		const currentFireModel = fireEntity.getAttribute("gltf-model");
+		
+		// Use the cylinder type that was brought near (stored BEFORE transformation)
+		const broughtCylinderType = window.currentBroughtCylinderType;
+		
+		console.log("=== DETAILED FIRE CHECK ===");
+		console.log("1. Current fire model on fireEntity:", currentFireModel);
+		console.log("2. Window.currentBroughtCylinderType:", broughtCylinderType);
+		console.log("3. This component extinguisherType:", this.extinguisherType);
+		
+		// Map fire model file paths to extinguisher types
+		const fireToExtinguisher = {
+			"assets/models/co2_fire.glb": "co2",
+			"assets/models/dry_powder_fire.glb": "powder",
+			"assets/models/foam_fire.glb": "foam",
+			"assets/models/water_fire.glb": "water",
+			// Also keep ID mappings as backup
+			"#co2Fire": "co2",
+			"#dryPowderFire": "powder",
+			"#foamFire": "foam",
+			"#waterFire": "water"
+		};
+
+		const requiredExtinguisher = fireToExtinguisher[currentFireModel];
+		
+		console.log("4. Required extinguisher for this fire:", requiredExtinguisher);
+		console.log("5. Does brought cylinder match required?", broughtCylinderType === requiredExtinguisher);
+		console.log("===========================");
+		
+		if (broughtCylinderType === requiredExtinguisher) {
+			console.log("✓ CORRECT EXTINGUISHER! SUCCESS!");
+			this.showDoneMessage();
+		} else {
+			console.log("✗ WRONG EXTINGUISHER! MISMATCH!");
+			this.showWrongMessage();
+		}
+	},
+
+	showDoneMessage() {
+		const statusLabel = document.getElementById("statusLabel");
+		console.log("Showing done message");
+		if (statusLabel) {
+			statusLabel.textContent = "✓ Done! Correct extinguisher used!";
+			statusLabel.classList.add("success");
+			statusLabel.classList.remove("error");
+			statusLabel.removeAttribute("hidden");
+			
+			// Hide fire after 2 seconds
+			setTimeout(() => {
+				const fireEntity = document.getElementById("fireEntity");
+				const fireTypeLabel = document.getElementById("fireTypeLabel");
+				const startFireButton = document.getElementById("startFireButton");
+				const refreshFireButton = document.getElementById("refreshFireButton");
+				
+				if (fireEntity) fireEntity.setAttribute("visible", false);
+				if (fireTypeLabel) fireTypeLabel.setAttribute("hidden", "");
+				if (statusLabel) statusLabel.setAttribute("hidden", "");
+				statusLabel.classList.remove("success");
+				if (startFireButton) startFireButton.hidden = false;
+				if (refreshFireButton) refreshFireButton.hidden = true;
+				
+				// Reset all extinguishers' check flag
+				document.querySelectorAll('[drag-extinguisher]').forEach(el => {
+					if (el.components['drag-extinguisher']) {
+						el.components['drag-extinguisher'].hasCheckedFire = false;
+					}
+				});
+			}, 2000);
+		}
+	},
+
+	showWrongMessage() {
+		const statusLabel = document.getElementById("statusLabel");
+		console.log("Showing wrong message");
+		if (statusLabel) {
+			statusLabel.textContent = "✗ Wrong extinguisher! Try again.";
+			statusLabel.classList.add("error");
+			statusLabel.classList.remove("success");
+			statusLabel.removeAttribute("hidden");
+			
+			// Hide message after 2 seconds
+			setTimeout(() => {
+				statusLabel.setAttribute("hidden", "");
+				statusLabel.classList.remove("error");
+			}, 2000);
 		}
 	},
 
@@ -97,6 +225,13 @@ AFRAME.registerComponent("drag-extinguisher", {
 
 		this.isDragging = true;
 		this.canvas.setPointerCapture(event.pointerId);
+		
+		// Track which extinguisher cylinder is being dragged (by original model)
+		window.currentDraggedModel = this.originalModel;
+		window.currentDraggedExtinguisher = this.extinguisherType;
+		console.log("Started dragging cylinder. Original model:", this.originalModel);
+		console.log("Extinguisher type:", this.extinguisherType);
+		
 		event.preventDefault();
 	},
 
@@ -122,6 +257,10 @@ AFRAME.registerComponent("drag-extinguisher", {
 		if (this.canvas.hasPointerCapture(event.pointerId)) {
 			this.canvas.releasePointerCapture(event.pointerId);
 		}
+		
+		// Clear tracked extinguisher
+		window.currentDraggedExtinguisher = null;
+		console.log("Stopped dragging extinguisher");
 	},
 
 	remove() {

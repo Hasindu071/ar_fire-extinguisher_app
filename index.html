@@ -56,6 +56,9 @@ AFRAME.registerComponent('mouse-rotate', {
 
     <!-- Fire type label display at top -->
     <div id="fireTypeLabel" class="fire-type-label" hidden></div>
+    
+    <!-- Status label for Done/Wrong messages -->
+    <div id="statusLabel" class="status-label" hidden></div>
 
     <!-- The container which holds the AR content -->
     <a-scene
@@ -149,7 +152,7 @@ AFRAME.registerComponent('mouse-rotate', {
 
                 <a-entity
                     gltf-model="#co2Extinguisher"
-                    drag-extinguisher="target: #markerTarget"
+                    drag-extinguisher="target: #markerTarget; extinguisherType: co2"
                     position="-0.65 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.7 1.7 1.7"
@@ -158,7 +161,7 @@ AFRAME.registerComponent('mouse-rotate', {
 
                 <a-entity
                     gltf-model="#foamExtinguisher"
-                    drag-extinguisher="target: #markerTarget"
+                    drag-extinguisher="target: #markerTarget; extinguisherType: foam"
                     position="-0.25 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
@@ -167,7 +170,7 @@ AFRAME.registerComponent('mouse-rotate', {
 
                 <a-entity
                     gltf-model="#powderExtinguisher"
-                    drag-extinguisher="target: #markerTarget"
+                    drag-extinguisher="target: #markerTarget; extinguisherType: powder"
                     position="0.15 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
@@ -176,7 +179,7 @@ AFRAME.registerComponent('mouse-rotate', {
 
                 <a-entity
                     gltf-model="#waterExtinguisher"
-                    drag-extinguisher="target: #markerTarget"
+                    drag-extinguisher="target: #markerTarget; extinguisherType: water"
                     position="0.55 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
