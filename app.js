@@ -103,9 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	const fireModels = ["#co2Fire", "#dryPowderFire", "#foamFire", "#waterFire"];
 	const fireScales = {
 		"#co2Fire": "2.2 2.2 2.2",
-		"#dryPowderFire": "2.4 2.4 2.4",
-		"#foamFire": "2.3 2.3 2.3",
-		"#waterFire": "2.25 2.25 2.25"
+		"#dryPowderFire": "0.2 0.2 0.2",
+		"#foamFire": "0.8 0.8 0.8",
+		"#waterFire": "0.2 0.2 0.2"
 	};
 
 	if (!target || !fireEntity || !startButton) {
