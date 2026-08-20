@@ -156,11 +156,13 @@ AFRAME.registerComponent("drag-extinguisher", {
 			// Hide fire after 2 seconds
 			setTimeout(() => {
 				const fireEntity = document.getElementById("fireEntity");
+				const ashEntity = document.getElementById("ashEntity");
 				const fireTypeLabel = document.getElementById("fireTypeLabel");
 				const startFireButton = document.getElementById("startFireButton");
 				const refreshFireButton = document.getElementById("refreshFireButton");
 				
 				if (fireEntity) fireEntity.setAttribute("visible", false);
+				if (ashEntity) ashEntity.setAttribute("visible", false);
 				if (fireTypeLabel) fireTypeLabel.setAttribute("hidden", "");
 				if (statusLabel) statusLabel.setAttribute("hidden", "");
 				statusLabel.classList.remove("success");
@@ -179,18 +181,26 @@ AFRAME.registerComponent("drag-extinguisher", {
 
 	showWrongMessage() {
 		const statusLabel = document.getElementById("statusLabel");
-		console.log("Showing wrong message");
+		const ashEntity = document.getElementById("ashEntity");
+		const fireEntity = document.getElementById("fireEntity");
+		
+		console.log("Showing wrong message - displaying ash model");
 		if (statusLabel) {
 			statusLabel.textContent = "✗ Wrong extinguisher! Try again.";
 			statusLabel.classList.add("error");
 			statusLabel.classList.remove("success");
 			statusLabel.removeAttribute("hidden");
 			
-			// Hide message after 2 seconds
+			// Show ash model instead of fire
+			if (fireEntity) fireEntity.setAttribute("visible", false);
+			if (ashEntity) ashEntity.setAttribute("visible", true);
+			
+			// Hide message and ash after 3 seconds
 			setTimeout(() => {
 				statusLabel.setAttribute("hidden", "");
 				statusLabel.classList.remove("error");
-			}, 2000);
+				if (ashEntity) ashEntity.setAttribute("visible", false);
+			}, 3000);
 		}
 	},
 

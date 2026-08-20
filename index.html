@@ -119,6 +119,11 @@ AFRAME.registerComponent('mouse-rotate', {
                 src="assets/models/spray_form.glb">
             </a-asset-item>
 
+            <a-asset-item
+                id="ashModel"
+                src="assets/models/ash.glb">
+            </a-asset-item>
+
         </a-assets>
 
 
@@ -146,6 +151,17 @@ AFRAME.registerComponent('mouse-rotate', {
                     position="2.65 -0.7 0.5"
                     rotation="0 0 0"
                     scale="0.2 0.2 0.2"
+                    visible="false"
+                    mouse-rotate>
+                </a-entity>
+
+                <!-- Ash model that appears when wrong extinguisher is used -->
+                <a-entity
+                    id="ashEntity"
+                    gltf-model="#ashModel"
+                    position="2.65 -0.7 0.5"
+                    rotation="0 0 0"
+                    scale="1 1 1"
                     visible="false"
                     mouse-rotate>
                 </a-entity> 
