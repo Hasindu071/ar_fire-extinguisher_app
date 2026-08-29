@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const fireTypeLabel = document.getElementById("fireTypeLabel");
 	const startButton = document.getElementById("startFireButton");
 	const refreshButton = document.getElementById("refreshFireButton");
+	const informationButton = document.getElementById("informationButton");
 	const fireModels = ["#co2Fire", "#dryPowderFire", "#foamFire", "#waterFire"];
 	const fireScales = {
 		"#co2Fire": "2.2 2.2 2.2",
@@ -327,6 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	if (!target || !fireEntity || !startButton || !refreshButton) {
+		console.error("Missing required elements for marker tracking");
 		return;
 	}
 
@@ -335,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		fireTypeLabel.setAttribute("hidden", "");
 		startButton.hidden = true;
 		refreshButton.hidden = true;
+		informationButton.classList.remove("visible");
 	};
 
 	const displayRandomFire = () => {
@@ -352,16 +355,217 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	target.addEventListener("targetFound", () => {
+		console.log("✓✓✓ TARGET FOUND EVENT FIRED ✓✓✓");
 		fireEntity.setAttribute("visible", false);
 		startButton.hidden = false;
 		refreshButton.hidden = true;
+		informationButton.classList.add("visible");
+		console.log("Info button classes:", informationButton.className);
+		console.log("Info button visible:", informationButton.offsetParent !== null);
 	});
 
-	target.addEventListener("targetLost", resetFireState);
+	target.addEventListener("targetLost", () => {
+		console.log("✗✗✗ TARGET LOST EVENT FIRED ✗✗✗");
+		resetFireState();
+	});
+
+	// Also log when these listeners are added
+	console.log("Target element found:", target !== null);
+	console.log("Info button element found:", informationButton !== null);
 
 	startButton.addEventListener("click", displayRandomFire);
 
 	refreshButton.addEventListener("click", displayRandomFire);
 
 	resetFireState();
+	console.log("Marker tracking initialized");
+});
+
+// =====================
+// MARKERLESS AR SECTION (using AR.js - ARLite)
+// =====================
+
+document.addEventListener("DOMContentLoaded", () => {
+	const informationButton = document.getElementById("informationButton");
+	const backToMarkerButton = document.getElementById("backToMarkerButton");
+	const markerScene = document.getElementById("markerScene");
+	const markerlessScene = document.getElementById("markerlessScene");
+	const modeIndicator = document.getElementById("modeIndicator");
+	const arLoadingScreen = document.getElementById("arLoadingScreen");
+	const placementInstruction = document.getElementById("placementInstruction");
+	const overlay = document.getElementById("overlay");
+	const cylinderContainer = document.getElementById("cylinderContainer");
+
+	let placedCylinders = [];
+
+	// Cylinder configurations for markerless AR
+	const cylinderConfigs = [
+		{
+			id: "co2MarkerlessExt",
+			model: "#co2ExtinguisherMarkerless",
+			type: "co2",
+			color: 0x1976d2
+		},
+		{
+			id: "foamMarkerlessExt",
+			model: "#foamExtinguisherMarkerless",
+			type: "foam",
+			color: 0xffc107
+		},
+		{
+			id: "powderMarkerlessExt",
+			model: "#powderExtinguisherMarkerless",
+			type: "powder",
+			color: 0xff9800
+		},
+		{
+			id: "waterMarkerlessExt",
+			model: "#waterExtinguisherMarkerless",
+			type: "water",
+			color: 0x00bcd4
+		}
+	];
+
+	// Switch to markerless AR
+	informationButton.addEventListener("click", async () => {
+		console.log("Starting markerless AR with AR.js...");
+		arLoadingScreen.removeAttribute("hidden");
+		informationButton.classList.remove("visible");
+		
+		try {
+			// Request camera permissions
+			const stream = await navigator.mediaDevices.getUserMedia({
+				video: { 
+					facingMode: 'environment',
+					width: { ideal: 1280 },
+					height: { ideal: 720 }
+				}
+			});
+			
+			// Stop the stream as AR.js will handle it
+			stream.getTracks().forEach(track => track.stop());
+
+			console.log("Camera access granted, starting AR.js");
+			isMarkerlessActive = true;
+
+			// Switch scenes
+			markerScene.setAttribute("hidden", "");
+			markerlessScene.removeAttribute("hidden");
+			overlay.style.display = "block";
+			modeIndicator.textContent = "� ARLite Markerless Active";
+			modeIndicator.removeAttribute("hidden");
+
+			// Hide loading screen
+			setTimeout(() => {
+				arLoadingScreen.setAttribute("hidden", "");
+				placementInstruction.textContent = "Tap to place fire extinguishers (1/4)";
+			}, 1000);
+
+			// Set up click handler for placement
+			setupClickPlacement();
+
+		} catch (err) {
+			console.error("Failed to access camera:", err);
+			arLoadingScreen.setAttribute("hidden", "");
+			informationButton.classList.add("visible");
+			alert("Camera access denied. Please enable camera permissions and try again.");
+		}
+	});
+
+	// Set up click handler for cylinder placement
+	function setupClickPlacement() {
+		const canvas = markerlessScene.querySelector("a-camera").el.sceneEl.canvas;
+		
+		canvas.addEventListener("click", (e) => {
+			if (placedCylinders.length < 4) {
+				placeCylinder();
+			}
+		});
+
+		// Also support touch for mobile
+		canvas.addEventListener("touchstart", (e) => {
+			if (placedCylinders.length < 4 && e.touches.length === 1) {
+				e.preventDefault();
+				placeCylinder();
+			}
+		}, false);
+	}
+
+	// Place a cylinder in the scene
+	function placeCylinder() {
+		if (placedCylinders.length >= 4) return;
+
+		const config = cylinderConfigs[placedCylinders.length];
+		const entity = document.createElement("a-entity");
+		
+		// Create cylinder at positions in front of camera
+		const positions = [
+			{ x: -0.6, y: 0.2, z: -2 },
+			{ x: 0.6, y: 0.2, z: -2 },
+			{ x: -0.6, y: 0.2, z: -3 },
+			{ x: 0.6, y: 0.2, z: -3 }
+		];
+
+		const pos = positions[placedCylinders.length];
+
+		entity.id = config.id;
+		entity.setAttribute("gltf-model", config.model);
+		entity.setAttribute("position", `${pos.x} ${pos.y} ${pos.z}`);
+		entity.setAttribute("rotation", "0 0 0");
+		entity.setAttribute("scale", "1.5 1.5 1.5");
+		entity.setAttribute("class", "cylinder-model");
+
+		// Add falling animation
+		const startY = pos.y + 1;
+		entity.setAttribute("position", `${pos.x} ${startY} ${pos.z}`);
+
+		entity.addEventListener("loaded", () => {
+			// Animate falling
+			let currentY = startY;
+			const fallInterval = setInterval(() => {
+				currentY -= 0.1;
+				if (currentY <= pos.y) {
+					currentY = pos.y;
+					clearInterval(fallInterval);
+				}
+				entity.setAttribute("position", `${pos.x} ${currentY} ${pos.z}`);
+			}, 30);
+		});
+
+		cylinderContainer.appendChild(entity);
+		placedCylinders.push(config);
+
+		// Update instruction
+		const remaining = 4 - placedCylinders.length;
+		if (remaining > 0) {
+			placementInstruction.textContent = `Placed ${placedCylinders.length}/4 ✓ - Tap to place ${remaining} more`;
+		} else {
+			placementInstruction.textContent = "✓ All 4 fire extinguishers placed! 🎉";
+			setTimeout(() => {
+				placementInstruction.textContent = "You can move your camera around to view them";
+			}, 2000);
+		}
+
+		console.log(`Placed cylinder ${placedCylinders.length}/${4}: ${config.type}`);
+	}
+
+	// Back to marker-based AR
+	backToMarkerButton.addEventListener("click", () => {
+		console.log("Returning to marker AR...");
+
+		// Clean up markerless scene
+		placedCylinders = [];
+		cylinderContainer.innerHTML = "";
+
+		// Switch back to marker scene
+		markerlessScene.setAttribute("hidden", "");
+		markerScene.removeAttribute("hidden");
+		overlay.style.display = "none";
+		modeIndicator.setAttribute("hidden", "");
+		informationButton.classList.remove("visible");
+
+		console.log("Switched back to marker-based AR");
+	});
+
+	console.log("AR.js (ARLite) Markerless AR Ready");
 });
