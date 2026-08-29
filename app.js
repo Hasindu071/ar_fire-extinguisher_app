@@ -474,21 +474,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Set up click handler for cylinder placement
 	function setupClickPlacement() {
-		const canvas = markerlessScene.querySelector("a-camera").el.sceneEl.canvas;
+		console.log("Setting up placement...");
 		
-		canvas.addEventListener("click", (e) => {
-			if (placedCylinders.length < 4) {
-				placeCylinder();
-			}
-		});
+		// Wait for the scene to be ready
+		setTimeout(() => {
+			const scene = markerlessScene.components.scene;
+			console.log("Scene:", scene);
+			console.log("MarkerlessScene element:", markerlessScene);
+			
+			// Try to attach click listener directly to the scene element
+			markerlessScene.addEventListener("click", (e) => {
+				console.log("Scene clicked, placedCylinders:", placedCylinders.length);
+				if (placedCylinders.length < 4) {
+					placeCylinder();
+				}
+			});
 
-		// Also support touch for mobile
-		canvas.addEventListener("touchstart", (e) => {
-			if (placedCylinders.length < 4 && e.touches.length === 1) {
-				e.preventDefault();
-				placeCylinder();
-			}
-		}, false);
+			// Also support touch for mobile - attach to document for better coverage
+			document.addEventListener("touchstart", (e) => {
+				console.log("Touch detected, placedCylinders:", placedCylinders.length);
+				if (placedCylinders.length < 4 && e.touches.length === 1) {
+					placeCylinder();
+				}
+			}, false);
+			
+			console.log("Placement setup complete");
+		}, 500);
 	}
 
 	// Place a cylinder in the scene
@@ -496,6 +507,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (placedCylinders.length >= 4) return;
 
 		const config = cylinderConfigs[placedCylinders.length];
+		console.log("Placing cylinder:", config.id, "Model:", config.model);
+		
 		const entity = document.createElement("a-entity");
 		
 		// Create cylinder at positions in front of camera
@@ -520,6 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		entity.setAttribute("position", `${pos.x} ${startY} ${pos.z}`);
 
 		entity.addEventListener("loaded", () => {
+			console.log("Model loaded:", config.id);
 			// Animate falling
 			let currentY = startY;
 			const fallInterval = setInterval(() => {
@@ -533,6 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		cylinderContainer.appendChild(entity);
+		console.log("Entity appended to container");
 		placedCylinders.push(config);
 
 		// Update instruction
