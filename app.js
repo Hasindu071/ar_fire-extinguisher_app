@@ -153,6 +153,17 @@ AFRAME.registerComponent("drag-extinguisher", {
 			statusLabel.classList.remove("error");
 			statusLabel.removeAttribute("hidden");
 			
+			// Play extinguisher spray sound - loop it while spraying
+			const extinguisherSound = document.getElementById("extinguisherSound");
+			const fireSound = document.getElementById("fireSound");
+			if (fireSound) fireSound.pause();
+			if (extinguisherSound) {
+				extinguisherSound.currentTime = 0;
+				extinguisherSound.loop = true; // Loop the spray sound during demonstration
+				extinguisherSound.volume = 0.7;
+				extinguisherSound.play().catch(err => console.log("Extinguisher sound play error:", err));
+			}
+			
 			// Get which extinguisher was used
 			const usedExtinguisherType = window.currentBroughtCylinderType;
 			
@@ -167,7 +178,7 @@ AFRAME.registerComponent("drag-extinguisher", {
 			const correctModelId = correctModelMap[usedExtinguisherType];
 			console.log("Showing correct model:", correctModelId, "for extinguisher type:", usedExtinguisherType);
 			
-			// Hide fire after 2 seconds
+			// Hide fire after 5 seconds (was 2 seconds) - gives time to see spraying in action
 			setTimeout(() => {
 				const fireEntity = document.getElementById("fireEntity");
 				const ashEntity = document.getElementById("ashEntity");
@@ -175,6 +186,11 @@ AFRAME.registerComponent("drag-extinguisher", {
 				const startFireButton = document.getElementById("startFireButton");
 				const refreshFireButton = document.getElementById("refreshFireButton");
 				const correctModelEntity = document.getElementById(correctModelId);
+				
+				// Stop spray sound before showing correct model
+				if (extinguisherSound) {
+					extinguisherSound.pause();
+				}
 				
 				if (fireEntity) fireEntity.setAttribute("visible", false);
 				if (ashEntity) ashEntity.setAttribute("visible", false);
@@ -196,7 +212,7 @@ AFRAME.registerComponent("drag-extinguisher", {
 				setTimeout(() => {
 					if (correctModelEntity) correctModelEntity.setAttribute("visible", false);
 				}, 3000);
-			}, 2000);
+			}, 5000); // Extended from 2000ms to 5000ms (5 seconds)
 		}
 	},
 
@@ -204,6 +220,10 @@ AFRAME.registerComponent("drag-extinguisher", {
 		const statusLabel = document.getElementById("statusLabel");
 		const ashEntity = document.getElementById("ashEntity");
 		const fireEntity = document.getElementById("fireEntity");
+		
+		// Stop fire sound
+		const fireSound = document.getElementById("fireSound");
+		if (fireSound) fireSound.pause();
 		
 		console.log("Showing wrong message - displaying ash model");
 		if (statusLabel) {
@@ -221,6 +241,13 @@ AFRAME.registerComponent("drag-extinguisher", {
 				statusLabel.setAttribute("hidden", "");
 				statusLabel.classList.remove("error");
 				if (ashEntity) ashEntity.setAttribute("visible", false);
+				// Restart fire sound if fire is still visible
+				if (fireEntity.getAttribute("visible")) {
+					if (fireSound) {
+						fireSound.currentTime = 0;
+						fireSound.play().catch(err => console.log("Fire sound play error:", err));
+					}
+				}
 			}, 3000);
 		}
 	},
@@ -338,6 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		startButton.hidden = true;
 		refreshButton.hidden = true;
 		informationButton.classList.remove("visible");
+		
+		// Stop fire sound
+		const fireSound = document.getElementById("fireSound");
+		if (fireSound) fireSound.pause();
 	};
 
 	const displayRandomFire = () => {
@@ -345,6 +376,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		fireEntity.setAttribute("gltf-model", randomModel);
 		fireEntity.setAttribute("scale", fireScales[randomModel]);
 		fireEntity.setAttribute("visible", true);
+		
+		// Play fire sound
+		const fireSound = document.getElementById("fireSound");
+		if (fireSound) {
+			fireSound.currentTime = 0;
+			fireSound.loop = true;
+			fireSound.volume = 0.5;
+			fireSound.play().catch(err => console.log("Fire sound play error:", err));
+		}
 		
 		// Update the fire type label at top
 		fireTypeLabel.textContent = fireTypes[randomModel];
