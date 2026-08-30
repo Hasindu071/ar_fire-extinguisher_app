@@ -35,10 +35,15 @@
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
 	cursor: pointer;
 	transition: background 0.3s ease;
+	display: none !important;
 }
 
 .refresh-fire-button[hidden] {
 	display: none !important;
+}
+
+.refresh-fire-button:not([hidden]) {
+	display: block !important;
 }
 
 .refresh-fire-button:hover {

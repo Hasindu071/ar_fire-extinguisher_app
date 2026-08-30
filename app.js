@@ -352,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		
 		startButton.hidden = true;
 		refreshButton.hidden = false;
+		informationButton.classList.remove("visible");
 	};
 
 	target.addEventListener("targetFound", () => {
