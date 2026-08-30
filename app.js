@@ -333,6 +333,55 @@ AFRAME.registerComponent("drag-extinguisher", {
 	}
 });
 
+// =====================
+// MODE SELECTION (Marker Based vs Markerless WebXR)
+// =====================
+document.addEventListener("DOMContentLoaded", () => {
+	const modeSelectScreen = document.getElementById("modeSelectScreen");
+	const markerModeButton = document.getElementById("markerModeButton");
+	const markerlessModeButton = document.getElementById("markerlessModeButton");
+	const markerScene = document.getElementById("markerScene");
+	const webxrScene = document.getElementById("webxrScene");
+	const webxrBackButton = document.getElementById("webxrBackButton");
+
+	if (!modeSelectScreen || !markerModeButton || !markerlessModeButton || !markerScene || !webxrScene) {
+		console.error("Missing required elements for mode selection");
+		return;
+	}
+
+	// User picked the marker-based experience (the existing app)
+	markerModeButton.addEventListener("click", () => {
+		modeSelectScreen.setAttribute("hidden", "");
+		webxrScene.setAttribute("hidden", "");
+		markerScene.removeAttribute("hidden");
+		console.log("Marker Based AR selected");
+	});
+
+	// User picked the markerless (WebXR) experience
+	markerlessModeButton.addEventListener("click", () => {
+		modeSelectScreen.setAttribute("hidden", "");
+		markerScene.setAttribute("hidden", "");
+		webxrScene.removeAttribute("hidden");
+		console.log("Markerless AR (WebXR) selected");
+
+		// Kick off the WebXR compatibility check + scene setup (defined in index.html)
+		if (typeof window.startWebXRExperience === "function") {
+			window.startWebXRExperience();
+		} else {
+			console.error("WebXR experience script did not load correctly");
+		}
+	});
+
+	// Return to the mode selection screen from the markerless experience
+	if (webxrBackButton) {
+		webxrBackButton.addEventListener("click", () => {
+			webxrScene.setAttribute("hidden", "");
+			modeSelectScreen.removeAttribute("hidden");
+			console.log("Returned to mode selection from Markerless AR");
+		});
+	}
+});
+
 document.addEventListener("DOMContentLoaded", () => {
 	const target = document.getElementById("markerTarget");
 	const fireEntity = document.getElementById("fireEntity");
