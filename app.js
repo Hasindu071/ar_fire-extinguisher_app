@@ -397,6 +397,41 @@
 });
 
 // =====================
+// TARGET PHOTO DOWNLOAD
+// =====================
+document.addEventListener("DOMContentLoaded", () => {
+	const downloadTargetBtn = document.querySelector(".download-target-btn");
+	const targetImage = document.querySelector(".target-photo-image");
+
+	if (downloadTargetBtn && targetImage) {
+		downloadTargetBtn.addEventListener("click", async () => {
+			try {
+				const imageUrl = targetImage.src;
+				const response = await fetch(imageUrl);
+				const blob = await response.blob();
+				
+				// Create a temporary download link
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = "fire-extinguisher-target.jpg";
+				document.body.appendChild(a);
+				a.click();
+				
+				// Clean up
+				window.URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+				
+				console.log("Target image downloaded successfully");
+			} catch (error) {
+				console.error("Download failed:", error);
+				alert("Download failed. Please try again.");
+			}
+		});
+	}
+});
+
+// =====================
 // MODE SELECTION (Marker Based vs Markerless WebXR)
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
