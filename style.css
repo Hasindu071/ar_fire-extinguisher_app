@@ -121,42 +121,6 @@ a-scene canvas {
 	}
 }
 
-.information-button {
-	position: fixed;
-	left: 50%;
-	bottom: 24px;
-	transform: translateX(12px);
-	z-index: 20;
-	border: 0;
-	border-radius: 999px;
-	padding: 12px 24px;
-	font-size: 16px;
-	font-weight: 700;
-	color: #ffffff;
-	background: #2196f3;
-	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: background 0.3s ease;
-	opacity: 0;
-	pointer-events: none;
-}
-
-.information-button.visible {
-	opacity: 1 !important;
-	pointer-events: auto !important;
-}
-
-.information-button:hover {
-	background: #1976d2;
-}
-
-.information-button:active {
-	transform: translateX(12px) scale(0.95);
-}
-
 .back-button {
 	position: fixed;
 	left: 24px;

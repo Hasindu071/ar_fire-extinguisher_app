@@ -1,4 +1,4 @@
-AFRAME.registerComponent("drag-extinguisher", {
+﻿AFRAME.registerComponent("drag-extinguisher", {
 	schema: {
 		target: { type: "selector" },
 		extinguisherType: { type: "string", default: "co2" }
@@ -388,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const fireTypeLabel = document.getElementById("fireTypeLabel");
 	const startButton = document.getElementById("startFireButton");
 	const refreshButton = document.getElementById("refreshFireButton");
-	const informationButton = document.getElementById("informationButton");
 	const fireModels = ["#co2Fire", "#dryPowderFire", "#foamFire", "#waterFire"];
 	const fireScales = {
 		"#co2Fire": "2.2 2.2 2.2",
@@ -413,7 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		fireTypeLabel.setAttribute("hidden", "");
 		startButton.hidden = true;
 		refreshButton.hidden = true;
-		informationButton.classList.remove("visible");
 		
 		// Stop fire sound
 		const fireSound = document.getElementById("fireSound");
@@ -441,7 +439,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		
 		startButton.hidden = true;
 		refreshButton.hidden = false;
-		informationButton.classList.remove("visible");
 	};
 
 	target.addEventListener("targetFound", () => {
@@ -449,9 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		fireEntity.setAttribute("visible", false);
 		startButton.hidden = false;
 		refreshButton.hidden = true;
-		informationButton.classList.add("visible");
-		console.log("Info button classes:", informationButton.className);
-		console.log("Info button visible:", informationButton.offsetParent !== null);
+		console.log("Target found - start button shown");
 	});
 
 	target.addEventListener("targetLost", () => {
@@ -461,7 +456,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Also log when these listeners are added
 	console.log("Target element found:", target !== null);
-	console.log("Info button element found:", informationButton !== null);
 
 	startButton.addEventListener("click", displayRandomFire);
 
@@ -476,7 +470,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // =====================
 
 document.addEventListener("DOMContentLoaded", () => {
-	const informationButton = document.getElementById("informationButton");
 	const backToMarkerButton = document.getElementById("backToMarkerButton");
 	const markerScene = document.getElementById("markerScene");
 	const markerlessScene = document.getElementById("markerlessScene");
@@ -515,52 +508,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			color: 0x00bcd4
 		}
 	];
-
-	// Switch to markerless AR
-	informationButton.addEventListener("click", async () => {
-		console.log("Starting markerless AR with AR.js...");
-		arLoadingScreen.removeAttribute("hidden");
-		informationButton.classList.remove("visible");
-		
-		try {
-			// Request camera permissions
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { 
-					facingMode: 'environment',
-					width: { ideal: 1280 },
-					height: { ideal: 720 }
-				}
-			});
-			
-			// Stop the stream as AR.js will handle it
-			stream.getTracks().forEach(track => track.stop());
-
-			console.log("Camera access granted, starting AR.js");
-			isMarkerlessActive = true;
-
-			// Switch scenes
-			markerScene.setAttribute("hidden", "");
-			markerlessScene.removeAttribute("hidden");
-			overlay.style.display = "block";
-			modeIndicator.textContent = "� ARLite Markerless Active";
-			modeIndicator.removeAttribute("hidden");
-
-			// Hide loading screen
-			setTimeout(() => {
-				arLoadingScreen.setAttribute("hidden", "");
-				placementInstruction.textContent = "Tap to place fire extinguishers (1/4)";
-			}, 1000);
-
-			// Set up click handler for placement
-			setupClickPlacement();
-
-		} catch (err) {
-			console.error("Failed to access camera:", err);
-			arLoadingScreen.setAttribute("hidden", "");
-			informationButton.classList.add("visible");
-			alert("Camera access denied. Please enable camera permissions and try again.");
-		}
-	});
 
 	// Set up click handler for cylinder placement
 	function setupClickPlacement() {
@@ -667,7 +614,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		markerScene.removeAttribute("hidden");
 		overlay.style.display = "none";
 		modeIndicator.setAttribute("hidden", "");
-		informationButton.classList.remove("visible");
 
 		console.log("Switched back to marker-based AR");
 	});
