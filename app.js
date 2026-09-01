@@ -256,6 +256,14 @@
 		const fireSound = document.getElementById("fireSound");
 		if (fireSound) fireSound.pause();
 		
+		// Play blaster sound
+		const blasterSound = document.getElementById("blasterSound");
+		if (blasterSound) {
+			blasterSound.currentTime = 0;
+			blasterSound.volume = 0.8;
+			blasterSound.play().catch(err => console.log("Blaster sound play error:", err));
+		}
+		
 		console.log("Showing wrong message - displaying ash model");
 		if (statusLabel) {
 			statusLabel.textContent = "✗ Wrong extinguisher! Try again.";
