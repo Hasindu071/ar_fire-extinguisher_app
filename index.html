@@ -410,6 +410,178 @@
             }
         }
 
+        /* Fire Extinguisher Display */
+        .extinguisher-display {
+            position: fixed;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 250px;
+            width: 80px;
+        }
+
+        .left-extinguisher {
+            left: 20px;
+            bottom: 40px;
+            animation: bounceLeft 3s ease-in-out infinite;
+        }
+
+        .right-extinguisher {
+            right: 20px;
+            bottom: 40px;
+            animation: bounceRight 3s ease-in-out infinite;
+        }
+
+        @keyframes bounceLeft {
+            0%, 100% {
+                transform: translateY(0) rotate(-5deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(-5deg);
+            }
+        }
+
+        @keyframes bounceRight {
+            0%, 100% {
+                transform: translateY(0) rotate(5deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
+        }
+
+        /* Extinguisher Cylinder */
+        .extinguisher-cylinder {
+            width: 50px;
+            height: 80px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 
+                inset -2px 0 8px rgba(0, 0, 0, 0.4),
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 100, 100, 0.4);
+        }
+
+        .cylinder-red {
+            background: linear-gradient(90deg, #cc0000 0%, #ff4444 50%, #cc0000 100%);
+        }
+
+        .cylinder-yellow {
+            background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+        }
+
+        /* Extinguisher Nozzle */
+        .extinguisher-nozzle {
+            width: 12px;
+            height: 20px;
+            background: linear-gradient(90deg, #333 0%, #555 50%, #333 100%);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            top: -5px;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.5);
+            animation: sprayPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes sprayPulse {
+            0%, 100% {
+                height: 20px;
+                opacity: 1;
+            }
+            50% {
+                height: 24px;
+                opacity: 0.8;
+            }
+        }
+
+        /* Extinguisher Handle */
+        .extinguisher-handle {
+            position: absolute;
+            width: 35px;
+            height: 25px;
+            border: 3px solid #333;
+            border-bottom: none;
+            border-radius: 15px 15px 0 0;
+            top: 15px;
+            background: transparent;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Extinguisher Label */
+        .extinguisher-label {
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+            letter-spacing: 1px;
+            animation: labelPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes labelPulse {
+            0%, 100% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Spray effect animation */
+        .extinguisher-display::before {
+            content: '💨';
+            position: absolute;
+            font-size: 1.2rem;
+            opacity: 0;
+            animation: sprayEffect 2s ease-in-out infinite;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+        }
+
+        .left-extinguisher::before {
+            animation-delay: 0s;
+        }
+
+        .right-extinguisher::before {
+            animation-delay: 1s;
+        }
+
+        @keyframes sprayEffect {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateX(-50%) translateY(-30px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-60px);
+            }
+        }
+
+        /* Glow effect */
+        .extinguisher-cylinder {
+            animation: cylinderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes cylinderGlow {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.1);
+            }
+        }
+
         /* Extinguisher picker for markerless mode */
         #markerlessPicker {
             position: fixed;
@@ -636,6 +808,14 @@ AFRAME.registerComponent('mouse-rotate', {
         <div class="flame-decoration flame-2">🔥</div>
         <div class="flame-decoration flame-3">🔥</div>
         
+        <!-- Left fire extinguisher -->
+        <div class="extinguisher-display left-extinguisher">
+            <div class="extinguisher-cylinder cylinder-red"></div>
+            <div class="extinguisher-nozzle"></div>
+            <div class="extinguisher-handle"></div>
+            <div class="extinguisher-label">Safety</div>
+        </div>
+        
         <h1>Fire Extinguisher AR</h1>
         <p>Choose how you'd like to run the experience</p>
         
@@ -647,6 +827,14 @@ AFRAME.registerComponent('mouse-rotate', {
         
         <!-- Animated line separator -->
         <div class="separator-line separator-bottom"></div>
+        
+        <!-- Right fire extinguisher -->
+        <div class="extinguisher-display right-extinguisher">
+            <div class="extinguisher-cylinder cylinder-yellow"></div>
+            <div class="extinguisher-nozzle"></div>
+            <div class="extinguisher-handle"></div>
+            <div class="extinguisher-label">Learn</div>
+        </div>
     </div>
 
     <!-- Markerless (WebXR) compatibility test experience -->
