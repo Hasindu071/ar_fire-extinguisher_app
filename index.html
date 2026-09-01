@@ -39,23 +39,117 @@
             align-items: center;
             justify-content: center;
             gap: 18px;
-            background: #0d0d0f;
+            background: linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #8b0000 100%);
             color: #fff;
             text-align: center;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             padding: 24px;
+            overflow: hidden;
         }
+        
+        #modeSelectScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 100, 100, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.15) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background: 
+                    radial-gradient(circle at 20% 50%, rgba(255, 100, 100, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.15) 0%, transparent 50%);
+            }
+            50% {
+                background: 
+                    radial-gradient(circle at 80% 80%, rgba(255, 100, 100, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.15) 0%, transparent 50%);
+            }
+            100% {
+                background: 
+                    radial-gradient(circle at 20% 50%, rgba(255, 100, 100, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.15) 0%, transparent 50%);
+            }
+        }
+        
         #modeSelectScreen[hidden] {
             display: none;
         }
+        
         #modeSelectScreen h1 {
             margin: 0 0 4px 0;
-            font-size: 1.6rem;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            animation: titleGlow 2s ease-in-out infinite, float 3s ease-in-out infinite, gradientFlow 3s ease infinite;
+            text-shadow: 0 0 20px rgba(255, 100, 100, 0.7), 0 0 40px rgba(139, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(45deg, #ff4444, #cc0000, #ff4444);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+        
+        @keyframes titleGlow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(255, 100, 100, 0.7), 0 0 40px rgba(139, 0, 0, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(255, 100, 100, 0.9), 0 0 60px rgba(200, 0, 0, 0.7);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
         #modeSelectScreen p {
             margin: 0 0 12px 0;
-            opacity: 0.8;
+            opacity: 0.85;
+            font-size: 1.1rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 10;
         }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 0.85;
+                transform: translateY(0);
+            }
+        }
+        
         .mode-select-button {
             width: 260px;
             max-width: 80vw;
@@ -64,15 +158,256 @@
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            background: #2196f3;
+            background: linear-gradient(135deg, #cc0000 0%, #ff3333 100%);
             color: #fff;
             font-weight: 600;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 100, 100, 0.4);
+            animation: slideInButton 0.6s ease-out, pulseButton 2s ease-in-out infinite;
         }
+        
+        .mode-select-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .mode-select-button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        @keyframes slideInButton {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulseButton {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(255, 100, 100, 0.4);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 15px 40px rgba(255, 100, 100, 0.6);
+                transform: scale(1.02);
+            }
+        }
+        
         .mode-select-button.secondary {
-            background: #424242;
+            background: linear-gradient(135deg, #4a0000 0%, #8b0000 100%);
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.4);
+            animation: slideInButton 0.6s ease-out 0.1s both, pulseDarkButton 2s ease-in-out infinite;
         }
+        
+        @keyframes pulseDarkButton {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(139, 0, 0, 0.4);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 15px 40px rgba(139, 0, 0, 0.6);
+                transform: scale(1.02);
+            }
+        }
+        
+        .mode-select-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 100, 100, 0.6);
+        }
+        
+        .mode-select-button.secondary:hover {
+            box-shadow: 0 15px 40px rgba(139, 0, 0, 0.6);
+        }
+        
         .mode-select-button:active {
-            opacity: 0.85;
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Animated particles */
+        .animated-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 100, 100, 0.8), rgba(139, 0, 0, 0.6));
+            border-radius: 50%;
+            animation: float-particle 6s infinite ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 100, 100, 0.6);
+        }
+        
+        .particle:nth-child(1) {
+            left: 10%;
+            top: 20%;
+            animation-delay: 0s;
+        }
+        
+        .particle:nth-child(2) {
+            left: 80%;
+            top: 30%;
+            animation-delay: 0.5s;
+        }
+        
+        .particle:nth-child(3) {
+            left: 50%;
+            top: 10%;
+            animation-delay: 1s;
+        }
+        
+        .particle:nth-child(4) {
+            left: 20%;
+            top: 70%;
+            animation-delay: 1.5s;
+        }
+        
+        .particle:nth-child(5) {
+            left: 70%;
+            top: 80%;
+            animation-delay: 2s;
+        }
+        
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0.3;
+            }
+            25% {
+                transform: translate(20px, -30px) scale(1.2);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translate(-20px, 40px) scale(0.8);
+                opacity: 0.4;
+            }
+            75% {
+                transform: translate(30px, 20px) scale(1.1);
+                opacity: 0.5;
+            }
+        }
+        
+        /* Flame decorations */
+        .flame-decoration {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.4;
+            animation: flameFlicker 1.5s ease-in-out infinite, flameFloat 4s ease-in-out infinite;
+            z-index: 2;
+            text-shadow: 0 0 20px rgba(255, 100, 100, 0.8), 0 0 40px rgba(139, 0, 0, 0.6);
+            filter: drop-shadow(0 0 10px rgba(255, 100, 100, 0.6));
+        }
+        
+        .flame-1 {
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s, 0s;
+        }
+        
+        .flame-2 {
+            top: 60%;
+            right: 15%;
+            animation-delay: 0.3s, 0.5s;
+            font-size: 2.5rem;
+        }
+        
+        .flame-3 {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 0.6s, 1s;
+            font-size: 2rem;
+        }
+        
+        @keyframes flameFlicker {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes flameFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+        
+        /* Separator lines */
+        .separator-line {
+            width: 80%;
+            max-width: 300px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 100, 100, 0.6), transparent);
+            position: relative;
+            z-index: 10;
+            animation: expandLine 0.8s ease-out 0.4s both;
+            box-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
+        }
+        
+        .separator-bottom {
+            animation: expandLine 0.8s ease-out 0.9s both;
+        }
+        
+        @keyframes expandLine {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+            to {
+                width: 80%;
+                opacity: 1;
+            }
+        }
+        
+        /* Shimmer effect on buttons */
+        .mode-select-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
         }
 
         /* Extinguisher picker for markerless mode */
@@ -287,10 +622,31 @@ AFRAME.registerComponent('mouse-rotate', {
 
     <!-- Mode selection landing screen: choose Marker Based or Markerless AR -->
     <div id="modeSelectScreen" class="mode-select-screen">
+        <!-- Animated background particles -->
+        <div class="animated-particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+        
+        <!-- Animated flame icons -->
+        <div class="flame-decoration flame-1">🔥</div>
+        <div class="flame-decoration flame-2">🔥</div>
+        <div class="flame-decoration flame-3">🔥</div>
+        
         <h1>Fire Extinguisher AR</h1>
         <p>Choose how you'd like to run the experience</p>
+        
+        <!-- Animated line separator -->
+        <div class="separator-line"></div>
+        
         <button id="markerModeButton" class="mode-select-button">Marker Based AR</button>
         <button id="markerlessModeButton" class="mode-select-button secondary">Markerless AR (WebXR)</button>
+        
+        <!-- Animated line separator -->
+        <div class="separator-line separator-bottom"></div>
     </div>
 
     <!-- Markerless (WebXR) compatibility test experience -->
