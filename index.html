@@ -75,6 +75,32 @@
             opacity: 0.85;
         }
 
+        /* Extinguisher picker for markerless mode */
+        #markerlessPicker {
+            position: fixed;
+            z-index: 10;
+            left: 50%;
+            bottom: 110px;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        #markerlessPicker[hidden] {
+            display: none;
+        }
+        .picker-button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        .picker-button.active {
+            background: #2196f3;
+        }
+
         /* WebXR (markerless) test container */
         #webxrScene {
             position: fixed;
@@ -171,6 +197,14 @@ AFRAME.registerComponent('mouse-rotate', {
         <button id="webxrBackButton" aria-label="Back to mode selection">← Back</button>
         <div id="status">Checking WebXR...</div>
         <button id="start">Start AR</button>
+    </div>
+
+    <!-- Extinguisher type picker shown while in markerless mode -->
+    <div id="markerlessPicker" hidden>
+        <button class="picker-button active" data-type="co2">CO2</button>
+        <button class="picker-button" data-type="foam">Foam</button>
+        <button class="picker-button" data-type="powder">Powder</button>
+        <button class="picker-button" data-type="water">Water</button>
     </div>
 
     <!-- Fire type label display at top -->
@@ -452,14 +486,17 @@ AFRAME.registerComponent('mouse-rotate', {
 
     <button id="startFireButton" class="start-fire-button" aria-label="Start fire" hidden>Start</button>
     <button id="refreshFireButton" class="refresh-fire-button" aria-label="Refresh fire" hidden>New Fire</button>
+    <button id="informationButton" class="information-button" aria-label="Markerless AR" title="Markerless AR">Infromation</button>
 
     <!-- Markerless AR (WebXR) module: only starts once the user picks "Markerless AR" -->
     <script type="module">
     import * as THREE from "three";
     import { ARButton } from "three/addons/webxr/ARButton.js";
+    import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     const statusEl = document.getElementById("status");
     const startButton = document.getElementById("start");
+    const pickerEl = document.getElementById("markerlessPicker");
 
     function show(text) {
         statusEl.innerHTML = text;
@@ -471,6 +508,63 @@ AFRAME.registerComponent('mouse-rotate', {
     let hitTestSource = null;
     let hitTestSourceRequested = false;
     let webxrInitialized = false;
+
+    // GLB model paths for each extinguisher type (reuse the same assets
+    // already used by the marker-based scene)
+    const EXTINGUISHER_MODELS = {
+        co2:    "assets/models/co2_silinder.glb",
+        foam:   "assets/models/foam_silinder.glb",
+        powder: "assets/models/powder_silinder.glb",
+        water:  "assets/models/water_silinder.glb"
+    };
+
+    // Adjust per-model scale here if one type looks too big/small once placed
+    const EXTINGUISHER_SCALE = {
+        co2:    0.3,
+        foam:   0.3,
+        powder: 0.3,
+        water:  0.3
+    };
+
+    const gltfLoader = new GLTFLoader();
+    const cylinderTemplates = {}; // type -> loaded THREE.Group
+    let currentType = "co2";
+
+    function loadCylinderModel(type) {
+        if (cylinderTemplates[type] || cylinderTemplates[type] === "loading") return;
+        cylinderTemplates[type] = "loading";
+        gltfLoader.load(
+            EXTINGUISHER_MODELS[type],
+            (gltf) => {
+                cylinderTemplates[type] = gltf.scene;
+            },
+            undefined,
+            (error) => {
+                console.error(`Failed to load ${type} cylinder model`, error);
+                cylinderTemplates[type] = null;
+                show(`⚠️ Could not load ${type} model`);
+            }
+        );
+    }
+
+    // Preload all four so switching types in the picker is instant
+    function preloadAllCylinderModels() {
+        Object.keys(EXTINGUISHER_MODELS).forEach(loadCylinderModel);
+    }
+
+    // ------------------------------------------------------------
+    // EXTINGUISHER TYPE PICKER (markerless mode only)
+    // ------------------------------------------------------------
+    if (pickerEl) {
+        pickerEl.addEventListener("click", (e) => {
+            const btn = e.target.closest(".picker-button");
+            if (!btn) return;
+            currentType = btn.dataset.type;
+            pickerEl.querySelectorAll(".picker-button").forEach((b) => {
+                b.classList.toggle("active", b === btn);
+            });
+        });
+    }
 
     // ------------------------------------------------------------
     // CHECK WEBXR SUPPORT FIRST
@@ -507,9 +601,15 @@ AFRAME.registerComponent('mouse-rotate', {
             20
         );
 
-        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-        light.position.set(0.5, 1, 0.25);
-        scene.add(light);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        hemiLight.position.set(0.5, 1, 0.25);
+        scene.add(hemiLight);
+
+        // GLB materials generally need a directional light too, unlike a
+        // plain MeshBasicMaterial box which ignores lighting entirely
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(1, 2, 1);
+        scene.add(dirLight);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -532,22 +632,44 @@ AFRAME.registerComponent('mouse-rotate', {
         reticle.visible = false;
         scene.add(reticle);
 
-        // Tap to place a small cube ("the model") at the reticle position
+        // Show the extinguisher-type picker once we're in the AR scene
+        if (pickerEl) pickerEl.hidden = false;
+
+        preloadAllCylinderModels();
+
+        // Tap to place the currently selected extinguisher cylinder at the reticle
         const controller = renderer.xr.getController(0);
         controller.addEventListener("select", () => {
             if (!reticle.visible) {
                 show("⚠️ No surface detected yet");
                 return;
             }
-            const geometry = new THREE.BoxGeometry(0.08, 0.08, 0.08);
-            const material = new THREE.MeshStandardMaterial({ color: 0x2196f3 });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.position.setFromMatrixPosition(reticle.matrix);
-            scene.add(cube);
 
-            show("🟢 Model placed!<br>Hit-test + rendering both work.");
+            const template = cylinderTemplates[currentType];
+            if (!template || template === "loading") {
+                show(`⚠️ ${currentType} model still loading, try again in a moment`);
+                return;
+            }
+
+            const cylinder = template.clone(true);
+            cylinder.position.setFromMatrixPosition(reticle.matrix);
+
+            const s = EXTINGUISHER_SCALE[currentType] ?? 0.3;
+            cylinder.scale.set(s, s, s);
+
+            // Face the cylinder toward the camera on placement
+            cylinder.quaternion.copy(camera.quaternion);
+
+            scene.add(cylinder);
+
+            show(`🟢 ${currentType} extinguisher placed!<br>Hit-test + rendering both work.`);
         });
         scene.add(controller);
+
+        // Hide the picker again if the AR session ends
+        renderer.xr.addEventListener("sessionend", () => {
+            if (pickerEl) pickerEl.hidden = true;
+        });
 
         window.addEventListener("resize", onWindowResize);
 
