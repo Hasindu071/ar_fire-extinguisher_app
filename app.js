@@ -423,19 +423,76 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	// User picked the markerless (WebXR) experience
-	markerlessModeButton.addEventListener("click", () => {
+	markerlessModeButton.addEventListener("click", async () => {
 		modeSelectScreen.setAttribute("hidden", "");
 		markerScene.setAttribute("hidden", "");
-		webxrScene.removeAttribute("hidden");
-		console.log("Markerless AR (WebXR) selected");
-
-		// Kick off the WebXR compatibility check + scene setup (defined in index.html)
-		if (typeof window.startWebXRExperience === "function") {
-			window.startWebXRExperience();
-		} else {
-			console.error("WebXR experience script did not load correctly");
+		
+		// Stop MindAR completely
+		if (markerScene.components['mindar-image']) {
+			try {
+				await markerScene.components['mindar-image'].stop();
+				console.log("MindAR stopped successfully");
+			} catch (error) {
+				console.log("MindAR stop error:", error);
+			}
 		}
+		
+		// Show the picker with images instead of camera feed
+		const pickerEl = document.getElementById("markerlessPicker");
+		if (pickerEl) {
+			pickerEl.removeAttribute("hidden");
+		}
+		
+		// Don't show webxrScene, just show the picker
+		// webxrScene.removeAttribute("hidden");
+		console.log("Markerless AR (WebXR) selected - showing picker");
+
+		// Note: WebXR will only start when user clicks "Start AR" button, not immediately
 	});
+
+	// Back button from picker
+	const markerlessBackBtn = document.getElementById("markerlessBackButton");
+	if (markerlessBackBtn) {
+		markerlessBackBtn.addEventListener("click", async () => {
+			const pickerEl = document.getElementById("markerlessPicker");
+			if (pickerEl) {
+				pickerEl.setAttribute("hidden", "");
+			}
+			modeSelectScreen.removeAttribute("hidden");
+			
+			// Restart MindAR
+			if (markerScene.components['mindar-image']) {
+				try {
+					await markerScene.components['mindar-image'].start();
+					console.log("MindAR restarted successfully");
+				} catch (error) {
+					console.log("MindAR restart error:", error);
+				}
+			}
+			
+			console.log("Returned to mode selection from picker");
+		});
+	}
+
+	// Start AR button from picker
+	const markerlessStartBtn = document.getElementById("markerlessStartButton");
+	if (markerlessStartBtn) {
+		markerlessStartBtn.addEventListener("click", () => {
+			const pickerEl = document.getElementById("markerlessPicker");
+			if (pickerEl) {
+				pickerEl.setAttribute("hidden", "");
+			}
+			webxrScene.removeAttribute("hidden");
+			console.log("Starting WebXR experience");
+
+			// Kick off the WebXR compatibility check + scene setup (defined in index.html)
+			if (typeof window.startWebXRExperience === "function") {
+				window.startWebXRExperience();
+			} else {
+				console.error("WebXR experience script did not load correctly");
+			}
+		});
+	}
 
 	// Return to the mode selection screen from the marker-based experience
 	if (markerBackButton) {
@@ -480,10 +537,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Return to the mode selection screen from the markerless experience
 	if (webxrBackButton) {
-		webxrBackButton.addEventListener("click", () => {
+		webxrBackButton.addEventListener("click", async () => {
 			webxrScene.setAttribute("hidden", "");
-			modeSelectScreen.removeAttribute("hidden");
-			console.log("Returned to mode selection from Markerless AR");
+			
+			// Show picker again instead of mode selection
+			const pickerEl = document.getElementById("markerlessPicker");
+			if (pickerEl) {
+				pickerEl.removeAttribute("hidden");
+			}
+			
+			console.log("Returned to picker from AR Experience");
 		});
 	}
 });
