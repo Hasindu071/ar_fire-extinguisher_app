@@ -24,11 +24,23 @@
 		} else {
 			this.originalScale = { x: scaleAttr.x, y: scaleAttr.y, z: scaleAttr.z };
 		}
+		
+		// Store original position
+		const posAttr = this.el.getAttribute("position");
+		if (typeof posAttr === 'string') {
+			const parts = posAttr.split(' ');
+			this.originalPosition = { x: parseFloat(parts[0]), y: parseFloat(parts[1]), z: parseFloat(parts[2]) };
+		} else {
+			this.originalPosition = { x: posAttr.x, y: posAttr.y, z: posAttr.z };
+		}
+		
 		console.log("Original scale stored:", this.originalScale);
+		console.log("Original position stored:", this.originalPosition);
 		
 		this.isTransformed = false;
 		this.extinguisherType = this.data.extinguisherType;
 		this.hasCheckedFire = false; // Flag to prevent multiple checks
+		this.hasBeenUsed = false; // Track if cylinder was used on fire
 
 		if (!this.target || !this.canvas) {
 			return;
@@ -51,9 +63,11 @@
 			if (this.isTransformed) {
 				this.el.setAttribute("gltf-model", this.originalModel);
 				this.el.setAttribute("scale", `${this.originalScale.x} ${this.originalScale.y} ${this.originalScale.z}`);
+				this.el.setAttribute("position", `${this.originalPosition.x} ${this.originalPosition.y} ${this.originalPosition.z}`);
 				this.isTransformed = false;
 				this.hasCheckedFire = false; // Reset flag when fire disappears
-				console.log("Fire disappeared - reverted to original scale:", this.originalScale);
+				this.hasBeenUsed = false; // Reset used flag
+				console.log("Fire disappeared - reverted to original state");
 			}
 			return;
 		}
@@ -84,6 +98,7 @@
 				this.el.setAttribute("scale", "0.2 0.2 0.2"); // Smaller scale for spray_form
 				this.el.setAttribute("rotation", "0 270 0")
 				this.isTransformed = true;
+				this.hasBeenUsed = true; // Mark as used
 				console.log("✓ TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
 			}
 			
@@ -98,6 +113,7 @@
 			window.currentBroughtCylinderType = null; // Clear the stored type
 			this.el.setAttribute("gltf-model", this.originalModel);
 			this.el.setAttribute("scale", `${this.originalScale.x} ${this.originalScale.y} ${this.originalScale.z}`);
+			this.el.setAttribute("position", `${this.originalPosition.x} ${this.originalPosition.y} ${this.originalPosition.z}`);
 			this.isTransformed = false;
 			this.hasCheckedFire = false; // Reset flag when moving away
 			console.log("✓ REVERTED TO ORIGINAL! Distance:", distance.toFixed(2), "Scale:", this.originalScale);
@@ -198,19 +214,34 @@
 				if (fireTypeLabel) fireTypeLabel.setAttribute("hidden", "");
 				if (statusLabel) statusLabel.setAttribute("hidden", "");
 				statusLabel.classList.remove("success");
-				if (startFireButton) startFireButton.hidden = false;
-				if (refreshFireButton) refreshFireButton.hidden = true;
 				
-				// Reset all extinguishers' check flag
+				// Reset all extinguishers' check flag and position
 				document.querySelectorAll('[drag-extinguisher]').forEach(el => {
 					if (el.components['drag-extinguisher']) {
-						el.components['drag-extinguisher'].hasCheckedFire = false;
+						const comp = el.components['drag-extinguisher'];
+						comp.hasCheckedFire = false;
+						// Reset position to original if cylinder was used
+						if (comp.hasBeenUsed) {
+							el.setAttribute("position", `${comp.originalPosition.x} ${comp.originalPosition.y} ${comp.originalPosition.z}`);
+							comp.hasBeenUsed = false;
+							console.log("Reset cylinder position to:", comp.originalPosition);
+						}
 					}
 				});
 				
 				// Hide correct model after 3 more seconds
 				setTimeout(() => {
 					if (correctModelEntity) correctModelEntity.setAttribute("visible", false);
+					
+					// Show the "New Fire" button instead of "Start" button
+					if (refreshFireButton) {
+						refreshFireButton.hidden = false;
+						console.log("Showing New Fire button");
+					}
+					if (startFireButton) {
+						startFireButton.hidden = true;
+						console.log("Hiding Start button");
+					}
 				}, 3000);
 			}, 5000); // Extended from 2000ms to 5000ms (5 seconds)
 		}
@@ -318,7 +349,29 @@
 		
 		// Clear tracked extinguisher
 		window.currentDraggedExtinguisher = null;
-		console.log("Stopped dragging extinguisher");
+		
+		// Reset position to original when released (unless being used on fire)
+		const fireEntity = document.getElementById("fireEntity");
+		if (!fireEntity || !fireEntity.getAttribute("visible")) {
+			// Fire not active, always reset
+			this.el.setAttribute("position", `${this.originalPosition.x} ${this.originalPosition.y} ${this.originalPosition.z}`);
+			console.log("Cylinder released - reset to original position:", this.originalPosition);
+		} else {
+			// Fire is active, check distance
+			const cylinderLocalPos = this.el.getAttribute("position");
+			const fireLocalPos = fireEntity.getAttribute("position");
+			const dx = cylinderLocalPos.x - fireLocalPos.x;
+			const dy = cylinderLocalPos.y - fireLocalPos.y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+			
+			// If not close to fire, reset position
+			if (distance >= 1.2) {
+				this.el.setAttribute("position", `${this.originalPosition.x} ${this.originalPosition.y} ${this.originalPosition.z}`);
+				console.log("Cylinder released away from fire - reset to original position:", this.originalPosition);
+			} else {
+				console.log("Cylinder released near fire - keeping current position");
+			}
+		}
 	},
 
 	remove() {
@@ -341,6 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const markerModeButton = document.getElementById("markerModeButton");
 	const markerlessModeButton = document.getElementById("markerlessModeButton");
 	const markerScene = document.getElementById("markerScene");
+	const markerBackButton = document.getElementById("markerBackButton");
 	const webxrScene = document.getElementById("webxrScene");
 	const webxrBackButton = document.getElementById("webxrBackButton");
 
@@ -354,6 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		modeSelectScreen.setAttribute("hidden", "");
 		webxrScene.setAttribute("hidden", "");
 		markerScene.removeAttribute("hidden");
+		markerBackButton.removeAttribute("hidden");
 		console.log("Marker Based AR selected");
 	});
 
@@ -371,6 +426,46 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.error("WebXR experience script did not load correctly");
 		}
 	});
+
+	// Return to the mode selection screen from the marker-based experience
+	if (markerBackButton) {
+		markerBackButton.addEventListener("click", () => {
+			markerScene.setAttribute("hidden", "");
+			markerBackButton.setAttribute("hidden", "");
+			modeSelectScreen.removeAttribute("hidden");
+			
+			// Reset marker-based AR state
+			const fireEntity = document.getElementById("fireEntity");
+			const ashEntity = document.getElementById("ashEntity");
+			const fireTypeLabel = document.getElementById("fireTypeLabel");
+			const statusLabel = document.getElementById("statusLabel");
+			const startButton = document.getElementById("startFireButton");
+			const fireSound = document.getElementById("fireSound");
+			const extinguisherSound = document.getElementById("extinguisherSound");
+			
+			if (fireEntity) fireEntity.setAttribute("visible", false);
+			if (ashEntity) ashEntity.setAttribute("visible", false);
+			if (fireTypeLabel) fireTypeLabel.setAttribute("hidden", "");
+			if (statusLabel) statusLabel.setAttribute("hidden", "");
+			if (startButton) startButton.hidden = true;
+			if (fireSound) fireSound.pause();
+			if (extinguisherSound) extinguisherSound.pause();
+			
+			// Reset all extinguishers
+			document.querySelectorAll('[drag-extinguisher]').forEach(el => {
+				if (el.components['drag-extinguisher']) {
+					const comp = el.components['drag-extinguisher'];
+					comp.hasCheckedFire = false;
+					comp.isTransformed = false;
+					el.setAttribute("gltf-model", comp.originalModel);
+					el.setAttribute("scale", `${comp.originalScale.x} ${comp.originalScale.y} ${comp.originalScale.z}`);
+					el.setAttribute("position", `${comp.originalPosition.x} ${comp.originalPosition.y} ${comp.originalPosition.z}`);
+				}
+			});
+			
+			console.log("Returned to mode selection from Marker Based AR");
+		});
+	}
 
 	// Return to the mode selection screen from the markerless experience
 	if (webxrBackButton) {
