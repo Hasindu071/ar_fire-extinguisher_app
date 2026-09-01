@@ -231,7 +231,7 @@ AFRAME.registerComponent('mouse-rotate', {
         id="markerScene"
         mindar-image="imageTargetSrc: ./fire_extinguishers.mind;"
         color-space="sRGB"
-        renderer="colorManagement: true"
+        renderer="colorManagement: true; shadowMap.enabled: true; shadowMap.type: PCFSoftShadowMap;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         hidden>
@@ -343,7 +343,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     src="#rackImage"
                     position="0 0 0"
                     width="3.2"
-                    height="1.95">
+                    height="1.95"
+                    shadow="receive: true">
                 </a-image>
 
                 <a-entity
@@ -353,6 +354,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="0.2 0.2 0.2"
                     visible="false"
+                    shadow="cast: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -364,6 +366,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="1 1 1"
                     visible="false"
+                    shadow="cast: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -375,6 +378,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="2 2 2"
                     visible="false"
+                    shadow="cast: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -385,6 +389,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="0.05 0.05 0.05"
                     visible="false"
+                    shadow="cast: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -395,6 +400,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="0.5 0.5 0.5"
                     visible="false"
+                    shadow="cast: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -405,6 +411,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="3 3 3"
                     visible="false"
+                    shadow="cast: true"
                     mouse-rotate>
                 </a-entity> 
 
@@ -414,6 +421,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     position="-0.65 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.7 1.7 1.7"
+                    shadow="cast: true; receive: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -423,6 +431,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     position="-0.25 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
+                    shadow="cast: true; receive: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -432,6 +441,7 @@ AFRAME.registerComponent('mouse-rotate', {
                     position="0.15 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
+                    shadow="cast: true; receive: true"
                     mouse-rotate>
                 </a-entity>
 
@@ -441,13 +451,28 @@ AFRAME.registerComponent('mouse-rotate', {
                     position="0.55 -0.7 0.5"
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
+                    shadow="cast: true; receive: true"
                     mouse-rotate>
                 </a-entity>
 
         </a-entity>
 
-        <a-entity light="type: ambient; intensity: 1.1"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="-1 2 1"></a-entity>
+        <!-- Soft fill so shadows aren't pitch black -->
+        <a-entity light="type: ambient; intensity: 0.6"></a-entity>
+
+        <!-- Key light: casts the shadows -->
+        <a-entity
+            light="type: directional; intensity: 1.4; castShadow: true;
+                   shadowMapHeight: 1024; shadowMapWidth: 1024;
+                   shadowCameraLeft: -2; shadowCameraRight: 2;
+                   shadowCameraTop: 2; shadowCameraBottom: -2;
+                   shadowCameraNear: 0.1; shadowCameraFar: 6;
+                   shadowBias: -0.001"
+            position="-1 2 1">
+        </a-entity>
+
+        <!-- Gentle rim/fill light from the opposite side, no shadows, just to soften contrast -->
+        <a-entity light="type: directional; intensity: 0.35" position="1 1 1.5"></a-entity>
 
 
     </a-scene>
@@ -458,7 +483,8 @@ AFRAME.registerComponent('mouse-rotate', {
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; matrixCodeType: 3x3;"
-        renderer="antialias: true; alpha: true; precision: medium"
+        renderer="antialias: true; alpha: true; precision: medium; shadowMap.enabled: true; shadowMap.type: PCFSoftShadowMap;"
+        shadow="type: pcfsoft"
         hidden>
 
         <a-assets id="markerlessAssets">
@@ -473,8 +499,28 @@ AFRAME.registerComponent('mouse-rotate', {
         <!-- Container for placed cylinders -->
         <a-entity id="cylinderContainer"></a-entity>
 
-        <a-entity light="type: ambient; intensity: 1.3"></a-entity>
-        <a-entity light="type: directional; intensity: 1.4" position="2 3 2"></a-entity>
+        <!-- Invisible ground that only shows the shadows cast onto it,
+             so placed cylinders look grounded on the real-world floor -->
+        <a-plane
+            id="markerlessShadowCatcher"
+            rotation="-90 0 0"
+            width="4"
+            height="4"
+            material="shader: shadow; opacity: 0.4"
+            shadow="receive: true"
+            visible="false">
+        </a-plane>
+
+        <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+        <a-entity
+            light="type: directional; intensity: 1.3; castShadow: true;
+                   shadowMapHeight: 1024; shadowMapWidth: 1024;
+                   shadowCameraLeft: -2; shadowCameraRight: 2;
+                   shadowCameraTop: 2; shadowCameraBottom: -2;
+                   shadowCameraNear: 0.1; shadowCameraFar: 8;
+                   shadowBias: -0.001"
+            position="2 3 2">
+        </a-entity>
 
     </a-scene>
 
@@ -504,6 +550,7 @@ AFRAME.registerComponent('mouse-rotate', {
 
     let camera, scene, renderer;
     let reticle;
+    let shadowCatcher;
     let hitTestSource = null;
     let hitTestSourceRequested = false;
     let webxrInitialized = false;
@@ -600,20 +647,33 @@ AFRAME.registerComponent('mouse-rotate', {
             20
         );
 
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        // Soft fill light so shadows aren't pitch black
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 0.6);
         hemiLight.position.set(0.5, 1, 0.25);
         scene.add(hemiLight);
 
+        // Key light: this is the one that actually casts shadows.
         // GLB materials generally need a directional light too, unlike a
         // plain MeshBasicMaterial box which ignores lighting entirely
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
         dirLight.position.set(1, 2, 1);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.set(1024, 1024);
+        dirLight.shadow.camera.near = 0.1;
+        dirLight.shadow.camera.far = 5;
+        dirLight.shadow.camera.left = -1;
+        dirLight.shadow.camera.right = 1;
+        dirLight.shadow.camera.top = 1;
+        dirLight.shadow.camera.bottom = -1;
+        dirLight.shadow.bias = -0.001;
         scene.add(dirLight);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.xr.enabled = true;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.getElementById("webxrScene").appendChild(renderer.domElement);
 
         // ARButton handles requestSession + the required WebGL/XRWebGLLayer wiring
@@ -630,6 +690,16 @@ AFRAME.registerComponent('mouse-rotate', {
         reticle.matrixAutoUpdate = false;
         reticle.visible = false;
         scene.add(reticle);
+
+        // Invisible plane that only renders the shadows cast onto it, so
+        // placed extinguishers look grounded on the real-world floor/table
+        // instead of floating with no contact shadow.
+        const shadowGeo = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
+        const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+        shadowCatcher = new THREE.Mesh(shadowGeo, shadowMat);
+        shadowCatcher.receiveShadow = true;
+        shadowCatcher.visible = false;
+        scene.add(shadowCatcher);
 
         // Show the extinguisher-type picker once we're in the AR scene
         if (pickerEl) pickerEl.hidden = false;
@@ -658,6 +728,14 @@ AFRAME.registerComponent('mouse-rotate', {
 
             // Face the cylinder toward the camera on placement
             cylinder.quaternion.copy(camera.quaternion);
+
+            // Let this model cast a shadow onto the shadow catcher / other models
+            cylinder.traverse((node) => {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
 
             scene.add(cylinder);
 
@@ -713,9 +791,15 @@ AFRAME.registerComponent('mouse-rotate', {
 
                     reticle.visible = true;
                     reticle.matrix.fromArray(pose.transform.matrix);
+
+                    // Keep the shadow-catcher plane locked to the detected surface
+                    shadowCatcher.position.setFromMatrixPosition(reticle.matrix);
+                    shadowCatcher.visible = true;
+
                     show("🟢 Surface detected — tap screen to place model");
                 } else {
                     reticle.visible = false;
+                    shadowCatcher.visible = false;
                     show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
                 }
             }

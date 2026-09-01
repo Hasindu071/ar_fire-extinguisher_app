@@ -97,6 +97,7 @@
 				this.el.setAttribute("gltf-model", "#sprayForm");
 				this.el.setAttribute("scale", "0.2 0.2 0.2"); // Smaller scale for spray_form
 				this.el.setAttribute("rotation", "0 270 0")
+				this.el.setAttribute("shadow", "cast: true; receive: true");
 				this.isTransformed = true;
 				this.hasBeenUsed = true; // Mark as used
 				console.log("✓ TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
@@ -114,6 +115,7 @@
 			this.el.setAttribute("gltf-model", this.originalModel);
 			this.el.setAttribute("scale", `${this.originalScale.x} ${this.originalScale.y} ${this.originalScale.z}`);
 			this.el.setAttribute("position", `${this.originalPosition.x} ${this.originalPosition.y} ${this.originalPosition.z}`);
+			this.el.setAttribute("shadow", "cast: true; receive: true");
 			this.isTransformed = false;
 			this.hasCheckedFire = false; // Reset flag when moving away
 			console.log("✓ REVERTED TO ORIGINAL! Distance:", distance.toFixed(2), "Scale:", this.originalScale);
@@ -468,6 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					el.setAttribute("gltf-model", comp.originalModel);
 					el.setAttribute("scale", `${comp.originalScale.x} ${comp.originalScale.y} ${comp.originalScale.z}`);
 					el.setAttribute("position", `${comp.originalPosition.x} ${comp.originalPosition.y} ${comp.originalPosition.z}`);
+					el.setAttribute("shadow", "cast: true; receive: true");
 				}
 			});
 			
@@ -526,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		fireEntity.setAttribute("gltf-model", randomModel);
 		fireEntity.setAttribute("scale", fireScales[randomModel]);
 		fireEntity.setAttribute("visible", true);
+		fireEntity.setAttribute("shadow", "cast: true");
 		
 		// Play fire sound
 		const fireSound = document.getElementById("fireSound");
@@ -581,6 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const placementInstruction = document.getElementById("placementInstruction");
 	const overlay = document.getElementById("overlay");
 	const cylinderContainer = document.getElementById("cylinderContainer");
+	const markerlessShadowCatcher = document.getElementById("markerlessShadowCatcher");
 
 	let placedCylinders = [];
 
@@ -667,6 +672,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		entity.setAttribute("rotation", "0 0 0");
 		entity.setAttribute("scale", "1.5 1.5 1.5");
 		entity.setAttribute("class", "cylinder-model");
+		// Let each placed cylinder cast/receive a shadow so it looks grounded
+		entity.setAttribute("shadow", "cast: true; receive: true");
+
+		// Reveal the invisible shadow-catcher plane once the first cylinder goes down,
+		// positioned just under the row of cylinders so their shadows land on it
+		if (markerlessShadowCatcher) {
+			markerlessShadowCatcher.setAttribute("position", `0 ${pos.y - 0.2} -2.5`);
+			markerlessShadowCatcher.setAttribute("visible", true);
+		}
 
 		// Add falling animation
 		const startY = pos.y + 1;
@@ -711,6 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Clean up markerless scene
 		placedCylinders = [];
 		cylinderContainer.innerHTML = "";
+		if (markerlessShadowCatcher) markerlessShadowCatcher.setAttribute("visible", false);
 
 		// Switch back to marker scene
 		markerlessScene.setAttribute("hidden", "");
