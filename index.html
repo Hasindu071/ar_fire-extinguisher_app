@@ -101,6 +101,24 @@
             background: #2196f3;
         }
 
+        /* Reset button for markerless mode */
+        #markerlessResetButton {
+            position: fixed;
+            z-index: 10;
+            right: 20px;
+            bottom: 110px;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(200,0,0,0.75);
+            color: #fff;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        #markerlessResetButton[hidden] {
+            display: none;
+        }
+
         /* WebXR (markerless) test container */
         #webxrScene {
             position: fixed;
@@ -206,6 +224,9 @@ AFRAME.registerComponent('mouse-rotate', {
         <button class="picker-button" data-type="powder">Powder</button>
         <button class="picker-button" data-type="water">Water</button>
     </div>
+
+    <!-- Reset button to clear the placed model and place a new one -->
+    <button id="markerlessResetButton" hidden>↺ New</button>
 
     <!-- Fire type label display at top -->
     <div id="fireTypeLabel" class="fire-type-label" hidden></div>
@@ -542,6 +563,7 @@ AFRAME.registerComponent('mouse-rotate', {
     const statusEl = document.getElementById("status");
     const startButton = document.getElementById("start");
     const pickerEl = document.getElementById("markerlessPicker");
+    const resetButtonEl = document.getElementById("markerlessResetButton");
 
     function show(text) {
         statusEl.innerHTML = text;
@@ -572,9 +594,17 @@ AFRAME.registerComponent('mouse-rotate', {
         water:  0.3
     };
 
+    // How much the model rotates (around Y) per tap once it's already placed
+    const ROTATE_STEP = THREE.MathUtils.degToRad(45);
+
     const gltfLoader = new GLTFLoader();
     const cylinderTemplates = {}; // type -> loaded THREE.Group
     let currentType = "co2";
+
+    // The single placed model + which type it is. Once this is set, taps
+    // rotate it instead of placing another one.
+    let placedCylinder = null;
+    let placedType = null;
 
     function loadCylinderModel(type) {
         if (cylinderTemplates[type] || cylinderTemplates[type] === "loading") return;
@@ -598,6 +628,17 @@ AFRAME.registerComponent('mouse-rotate', {
         Object.keys(EXTINGUISHER_MODELS).forEach(loadCylinderModel);
     }
 
+    // Remove the currently placed cylinder (used by the "New" reset button)
+    function clearPlacedCylinder() {
+        if (placedCylinder) {
+            scene.remove(placedCylinder);
+            placedCylinder = null;
+            placedType = null;
+        }
+        if (resetButtonEl) resetButtonEl.hidden = true;
+        show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
+    }
+
     // ------------------------------------------------------------
     // EXTINGUISHER TYPE PICKER (markerless mode only)
     // ------------------------------------------------------------
@@ -610,6 +651,14 @@ AFRAME.registerComponent('mouse-rotate', {
                 b.classList.toggle("active", b === btn);
             });
         });
+    }
+
+    // ------------------------------------------------------------
+    // RESET BUTTON: clears the placed model so a new one (possibly a
+    // different type from the picker) can be placed again
+    // ------------------------------------------------------------
+    if (resetButtonEl) {
+        resetButtonEl.addEventListener("click", clearPlacedCylinder);
     }
 
     // ------------------------------------------------------------
@@ -706,46 +755,60 @@ AFRAME.registerComponent('mouse-rotate', {
 
         preloadAllCylinderModels();
 
-        // Tap to place the currently selected extinguisher cylinder at the reticle
+        // Tap behavior:
+        //  - Nothing placed yet  -> place the currently selected type at the reticle
+        //  - Already placed      -> rotate that SAME model around Y (no new model spawned)
         const controller = renderer.xr.getController(0);
         controller.addEventListener("select", () => {
-            if (!reticle.visible) {
-                show("⚠️ No surface detected yet");
-                return;
-            }
-
-            const template = cylinderTemplates[currentType];
-            if (!template || template === "loading") {
-                show(`⚠️ ${currentType} model still loading, try again in a moment`);
-                return;
-            }
-
-            const cylinder = template.clone(true);
-            cylinder.position.setFromMatrixPosition(reticle.matrix);
-
-            const s = EXTINGUISHER_SCALE[currentType] ?? 0.3;
-            cylinder.scale.set(s, s, s);
-
-            // Face the cylinder toward the camera on placement
-            cylinder.quaternion.copy(camera.quaternion);
-
-            // Let this model cast a shadow onto the shadow catcher / other models
-            cylinder.traverse((node) => {
-                if (node.isMesh) {
-                    node.castShadow = true;
-                    node.receiveShadow = true;
+            if (!placedCylinder) {
+                if (!reticle.visible) {
+                    show("⚠️ No surface detected yet");
+                    return;
                 }
-            });
 
-            scene.add(cylinder);
+                const template = cylinderTemplates[currentType];
+                if (!template || template === "loading") {
+                    show(`⚠️ ${currentType} model still loading, try again in a moment`);
+                    return;
+                }
 
-            show(`🟢 ${currentType} extinguisher placed!<br>Hit-test + rendering both work.`);
+                placedCylinder = template.clone(true);
+                placedType = currentType;
+                placedCylinder.position.setFromMatrixPosition(reticle.matrix);
+
+                const s = EXTINGUISHER_SCALE[currentType] ?? 0.3;
+                placedCylinder.scale.set(s, s, s);
+
+                // Face the cylinder toward the camera on placement
+                placedCylinder.quaternion.copy(camera.quaternion);
+
+                // Let this model cast a shadow onto the shadow catcher / other models
+                placedCylinder.traverse((node) => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+
+                scene.add(placedCylinder);
+                if (resetButtonEl) resetButtonEl.hidden = false;
+
+                show(`🟢 ${placedType} extinguisher placed!<br>Tap again to rotate it.`);
+                return;
+            }
+
+            // Already placed: rotate instead of adding another model
+            placedCylinder.rotation.y += ROTATE_STEP;
+            show(`🔄 Rotated ${placedType} extinguisher.<br>Tap "↺ New" to place a different one.`);
         });
         scene.add(controller);
 
-        // Hide the picker again if the AR session ends
+        // Hide the picker/reset button again if the AR session ends, and
+        // clear out the placed model so a fresh session starts empty
         renderer.xr.addEventListener("sessionend", () => {
             if (pickerEl) pickerEl.hidden = true;
+            if (resetButtonEl) resetButtonEl.hidden = true;
+            clearPlacedCylinder();
         });
 
         window.addEventListener("resize", onWindowResize);
@@ -796,11 +859,18 @@ AFRAME.registerComponent('mouse-rotate', {
                     shadowCatcher.position.setFromMatrixPosition(reticle.matrix);
                     shadowCatcher.visible = true;
 
-                    show("🟢 Surface detected — tap screen to place model");
+                    // Only overwrite the status text with "searching/found surface"
+                    // messages when nothing has been placed yet, so we don't stomp
+                    // on the "placed!" / "rotated!" messages once a model is down.
+                    if (!placedCylinder) {
+                        show("🟢 Surface detected — tap screen to place model");
+                    }
                 } else {
                     reticle.visible = false;
                     shadowCatcher.visible = false;
-                    show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
+                    if (!placedCylinder) {
+                        show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
+                    }
                 }
             }
         }
