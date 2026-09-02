@@ -1476,7 +1476,7 @@ AFRAME.registerComponent('face-camera', {
             (error) => {
                 console.error(`Failed to load ${type} cylinder model`, error);
                 cylinderTemplates[type] = null;
-                show(`⚠️ Could not load ${type} model`);
+                show(`Could not load ${type} model`);
             }
         );
     }
@@ -1494,7 +1494,7 @@ AFRAME.registerComponent('face-camera', {
             placedType = null;
         }
         if (resetButtonEl) resetButtonEl.hidden = true;
-        show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
+        show("Searching for a surface...<br>Move phone slowly over a floor/table");
     }
 
     // ------------------------------------------------------------
@@ -1530,20 +1530,20 @@ AFRAME.registerComponent('face-camera', {
     // ------------------------------------------------------------
     async function checkWebXR() {
         if (!navigator.xr) {
-            show("❌ WebXR NOT available in this browser<br>(try Chrome on Android with ARCore)");
+            show("WebXR NOT available in this browser<br>(try Chrome on Android with ARCore)");
             startButton.disabled = true;
             return;
         }
         try {
             const supported = await navigator.xr.isSessionSupported("immersive-ar");
             if (!supported) {
-                show("❌ immersive-ar NOT supported on this device");
+                show("immersive-ar NOT supported on this device");
                 startButton.disabled = true;
                 return;
             }
-            show("✅ immersive-ar supported. Tap Start AR.");
+            show("immersive-ar supported. Tap Start AR.");
         } catch (error) {
-            show("❌ WebXR check error<br>" + error.message);
+            show("WebXR check error<br>" + error.message);
         }
     }
 
@@ -1557,11 +1557,11 @@ AFRAME.registerComponent('face-camera', {
         }
         if (arButton.textContent && arButton.textContent.toUpperCase().includes("NOT")) {
             // Genuinely unsupported — let the button's own message stand
-            show("❌ AR not supported on this device/browser");
+            show("AR not supported on this device/browser");
             return;
         }
         if (attempt > 100) { // ~5s safety timeout
-            show("❌ Could not start AR automatically — device may not support it");
+            show("Could not start AR automatically — device may not support it");
             return;
         }
         setTimeout(() => autoStartAR(arButton, attempt + 1), 50);
@@ -1689,7 +1689,7 @@ AFRAME.registerComponent('face-camera', {
 
             // Already placed: rotate instead of adding another model
             placedCylinder.rotation.y += ROTATE_STEP;
-            show(`🔄 Rotated ${placedType} extinguisher.`);
+            show(`Rotated ${placedType} extinguisher.`);
         });
         scene.add(controller);
 
@@ -1754,13 +1754,13 @@ AFRAME.registerComponent('face-camera', {
                     shadowCatcher.visible = true;
 
                     if (!placedCylinder) {
-                        show("🟢 Surface detected — tap screen to place model");
+                        show("Surface detected — tap screen to place model");
                     }
                 } else {
                     reticle.visible = false;
                     if (!placedCylinder) {
                         shadowCatcher.visible = false;
-                        show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
+                        show("Searching for a surface...<br>Move phone slowly over a floor/table");
                     }
                 }
             }
