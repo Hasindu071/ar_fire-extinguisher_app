@@ -908,6 +908,28 @@ AFRAME.registerComponent('mouse-rotate', {
         });
     }
 });
+
+// Face-camera component: counter-rotates the entity against the marker's tilt
+// so it always presents flat-on to the camera, regardless of marker angle
+AFRAME.registerComponent('face-camera', {
+    tick: function () {
+        const sceneEl = this.el.sceneEl;
+        const camera = sceneEl.camera;
+        if (!camera || !this.el.object3D.parent) return;
+
+        // Get the camera's world-space rotation
+        const camWorldQuat = new THREE.Quaternion();
+        camera.getWorldQuaternion(camWorldQuat);
+
+        // Convert it into the marker's local space, since this entity
+        // is parented under #markerTarget (which itself tilts with the marker)
+        const parentWorldQuat = new THREE.Quaternion();
+        this.el.object3D.parent.getWorldQuaternion(parentWorldQuat);
+
+        const localQuat = parentWorldQuat.clone().invert().multiply(camWorldQuat);
+        this.el.object3D.quaternion.copy(localQuat);
+    }
+});
 </script>
 
 <body>
@@ -1160,7 +1182,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     scale="0.2 0.2 0.2"
                     visible="false"
                     shadow="cast: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <!-- Ash model that appears when wrong extinguisher is used -->
@@ -1172,7 +1195,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     scale="1 1 1"
                     visible="false"
                     shadow="cast: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <!-- Correct result models -->
@@ -1184,7 +1208,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     scale="2 2 2"
                     visible="false"
                     shadow="cast: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <a-entity
@@ -1195,7 +1220,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     scale="0.05 0.05 0.05"
                     visible="false"
                     shadow="cast: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <a-entity
@@ -1206,7 +1232,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     scale="0.5 0.5 0.5"
                     visible="false"
                     shadow="cast: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <a-entity
@@ -1217,7 +1244,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     scale="3 3 3"
                     visible="false"
                     shadow="cast: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity> 
 
                 <a-entity
@@ -1227,7 +1255,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="1.7 1.7 1.7"
                     shadow="cast: true; receive: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <a-entity
@@ -1237,7 +1266,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
                     shadow="cast: true; receive: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <a-entity
@@ -1247,7 +1277,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
                     shadow="cast: true; receive: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
                 <a-entity
@@ -1257,7 +1288,8 @@ AFRAME.registerComponent('mouse-rotate', {
                     rotation="0 0 0"
                     scale="1.5 1.5 1.5"
                     shadow="cast: true; receive: true"
-                    mouse-rotate>
+                    mouse-rotate
+                    face-camera>
                 </a-entity>
 
         </a-entity>
