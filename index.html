@@ -1042,6 +1042,16 @@ AFRAME.registerComponent('face-camera', {
 
     <!-- Markerless (WebXR) compatibility test experience -->
     <div id="webxrScene" hidden>
+        <!-- Leader-line callout overlay for markerless mode -->
+        <div id="cylinderInfoOverlay" hidden>
+            <svg id="calloutLinesSvg">
+                <line id="topCalloutLine" class="callout-line"></line>
+                <line id="bottomCalloutLine" class="callout-line"></line>
+            </svg>
+            <div id="topCalloutLabel" class="callout-label"></div>
+            <div id="bottomCalloutLabel" class="callout-label"></div>
+        </div>
+
         <button id="webxrBackButton" aria-label="Back to mode selection">← Back</button>
         <div id="status">Checking WebXR...</div>
         <button id="start">Start AR</button>
@@ -1455,6 +1465,113 @@ AFRAME.registerComponent('face-camera', {
     // How much the model rotates (around Y) per tap once it's already placed
     const ROTATE_STEP = THREE.MathUtils.degToRad(45);
 
+    // Info shown in the callout for each extinguisher type
+    const EXTINGUISHER_DETAILS = {
+        co2: {
+            title: "CO2 Extinguisher",
+            badge: "Class B, C · Electrical",
+            desc: "Best for electrical equipment and flammable liquid fires. Leaves no residue."
+        },
+        foam: {
+            title: "Foam Extinguisher",
+            badge: "Class A, B",
+            desc: "Suited for wood, paper, and flammable liquid fires. Forms a smothering blanket."
+        },
+        powder: {
+            title: "Dry Powder Extinguisher",
+            badge: "Class A, B, C",
+            desc: "Multi-purpose — works on solids, liquids, and gas fires. Reduced visibility after use."
+        },
+        water: {
+            title: "Water Extinguisher",
+            badge: "Class A",
+            desc: "For wood, paper, and textile fires only. Never use on electrical or oil fires."
+        }
+    };
+
+    const cylinderInfoOverlayEl = document.getElementById("cylinderInfoOverlay");
+    const topCalloutLineEl = document.getElementById("topCalloutLine");
+    const bottomCalloutLineEl = document.getElementById("bottomCalloutLine");
+    const topCalloutLabelEl = document.getElementById("topCalloutLabel");
+    const bottomCalloutLabelEl = document.getElementById("bottomCalloutLabel");
+
+    let calloutTopAnchor = null;    // THREE.Vector3, world space
+    let calloutBottomAnchor = null; // THREE.Vector3, world space
+
+    // Project a world-space point to on-screen pixel coordinates
+    function projectToScreen(vec3, cam, dom) {
+        const p = vec3.clone().project(cam);
+        return {
+            x: (p.x * 0.5 + 0.5) * dom.clientWidth,
+            y: (-p.y * 0.5 + 0.5) * dom.clientHeight,
+            behindCamera: p.z > 1
+        };
+    }
+
+    function populateCalloutContent(type) {
+        const info = EXTINGUISHER_DETAILS[type] || EXTINGUISHER_DETAILS.co2;
+        topCalloutLabelEl.innerHTML = `
+            <div class="callout-title">${info.title}</div>
+            <div class="callout-badge">${info.badge}</div>
+            <div class="callout-desc">${info.desc}</div>
+        `;
+        bottomCalloutLabelEl.innerHTML = `
+            <div class="callout-title">Where to aim</div>
+            <div class="callout-desc">Sweep side to side at the base of the fire, not the flames.</div>
+        `;
+    }
+
+    function showCalloutForModel(object3D, type) {
+        const box = new THREE.Box3().setFromObject(object3D);
+        calloutTopAnchor = new THREE.Vector3((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
+        calloutBottomAnchor = new THREE.Vector3((box.min.x + box.max.x) / 2, box.min.y, (box.min.z + box.max.z) / 2);
+
+        populateCalloutContent(type);
+        cylinderInfoOverlayEl.hidden = false;
+
+        // Small delay so the CSS opacity transition actually plays
+        requestAnimationFrame(() => {
+            topCalloutLabelEl.classList.add("visible");
+            bottomCalloutLabelEl.classList.add("visible", "label-below");
+        });
+    }
+
+    function hideCallout() {
+        cylinderInfoOverlayEl.hidden = true;
+        topCalloutLabelEl.classList.remove("visible");
+        bottomCalloutLabelEl.classList.remove("visible", "label-below");
+        calloutTopAnchor = null;
+        calloutBottomAnchor = null;
+    }
+
+    function updateCalloutPositions() {
+        if (!calloutTopAnchor || !calloutBottomAnchor || !renderer) return;
+        const dom = renderer.domElement;
+
+        const topAnchorPx = projectToScreen(calloutTopAnchor, camera, dom);
+        const bottomAnchorPx = projectToScreen(calloutBottomAnchor, camera, dom);
+
+        if (topAnchorPx.behindCamera || bottomAnchorPx.behindCamera) return;
+
+        const topLabelPx = { x: topAnchorPx.x, y: topAnchorPx.y - 90 };
+        const bottomLabelPx = { x: bottomAnchorPx.x, y: bottomAnchorPx.y + 90 };
+
+        topCalloutLineEl.setAttribute("x1", topAnchorPx.x);
+        topCalloutLineEl.setAttribute("y1", topAnchorPx.y);
+        topCalloutLineEl.setAttribute("x2", topLabelPx.x);
+        topCalloutLineEl.setAttribute("y2", topLabelPx.y);
+
+        bottomCalloutLineEl.setAttribute("x1", bottomAnchorPx.x);
+        bottomCalloutLineEl.setAttribute("y1", bottomAnchorPx.y);
+        bottomCalloutLineEl.setAttribute("x2", bottomLabelPx.x);
+        bottomCalloutLineEl.setAttribute("y2", bottomLabelPx.y);
+
+        topCalloutLabelEl.style.left = `${topLabelPx.x}px`;
+        topCalloutLabelEl.style.top = `${topLabelPx.y}px`;
+        bottomCalloutLabelEl.style.left = `${bottomLabelPx.x}px`;
+        bottomCalloutLabelEl.style.top = `${bottomLabelPx.y}px`;
+    }
+
     const gltfLoader = new GLTFLoader();
     const cylinderTemplates = {}; // type -> loaded THREE.Group
     let currentType = "co2";
@@ -1494,7 +1611,8 @@ AFRAME.registerComponent('face-camera', {
             placedType = null;
         }
         if (resetButtonEl) resetButtonEl.hidden = true;
-        show("Searching for a surface...<br>Move phone slowly over a floor/table");
+        hideCallout();
+        show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
     }
 
     // ------------------------------------------------------------
@@ -1682,8 +1800,9 @@ AFRAME.registerComponent('face-camera', {
 
                 scene.add(placedCylinder);
                 if (resetButtonEl) resetButtonEl.hidden = false;
+                showCalloutForModel(placedCylinder, placedType);
 
-                show(`🟢 ${placedType} extinguisher placed!<br>Tap again to rotate it.`);
+                show(`${placedType} extinguisher placed!<br>Tap again to rotate it.`);
                 return;
             }
 
@@ -1766,6 +1885,7 @@ AFRAME.registerComponent('face-camera', {
             }
         }
 
+        updateCalloutPositions();
         renderer.render(scene, camera);
     }
 
