@@ -226,3 +226,46 @@ a-scene[hidden] {
 	display: none !important;
 }
 
+/* Rotate-device instruction overlay for marker-based AR */
+#rotateInstruction {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	background: rgba(10, 0, 0, 0.95);
+	color: #fff;
+	text-align: center;
+	font-family: Arial, sans-serif;
+	padding: 24px;
+}
+
+#rotateInstruction[hidden] {
+	display: none;
+}
+
+#rotateInstruction .rotate-icon {
+	font-size: 4rem;
+	animation: rotateIconSpin 1.6s ease-in-out infinite;
+}
+
+@keyframes rotateIconSpin {
+	0%, 100% { transform: rotate(0deg); }
+	50% { transform: rotate(90deg); }
+}
+
+#rotateInstruction h2 {
+	margin: 0;
+	font-size: 1.4rem;
+}
+
+#rotateInstruction p {
+	margin: 0;
+	opacity: 0.85;
+	font-size: 1rem;
+	max-width: 300px;
+}
+

@@ -452,8 +452,23 @@ document.addEventListener("DOMContentLoaded", () => {
 	markerModeButton.addEventListener("click", () => {
 		modeSelectScreen.setAttribute("hidden", "");
 		webxrScene.setAttribute("hidden", "");
-		markerScene.removeAttribute("hidden");
-		markerBackButton.removeAttribute("hidden");
+
+		if (isLandscape()) {
+			// Already landscape — jump straight in
+			revealMarkerScene();
+		} else {
+			// Ask the user to rotate; reveal automatically once they do
+			if (rotateInstruction) rotateInstruction.removeAttribute("hidden");
+
+			const onRotateToLandscape = () => {
+				if (isLandscape()) {
+					revealMarkerScene();
+					window.matchMedia("(orientation: landscape)").removeEventListener("change", onRotateToLandscape);
+				}
+			};
+			window.matchMedia("(orientation: landscape)").addEventListener("change", onRotateToLandscape);
+		}
+
 		console.log("Marker Based AR selected");
 	});
 
@@ -534,6 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		markerBackButton.addEventListener("click", () => {
 			markerScene.setAttribute("hidden", "");
 			markerBackButton.setAttribute("hidden", "");
+			if (rotateInstruction) rotateInstruction.setAttribute("hidden", "");
 			modeSelectScreen.removeAttribute("hidden");
 			
 			// Reset marker-based AR state
@@ -584,6 +600,34 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.log("Returned to picker from AR Experience");
 		});
 	}
+
+	// ===== LANDSCAPE DETECTION HELPERS =====
+	const rotateInstruction = document.getElementById("rotateInstruction");
+
+	function isLandscape() {
+		return window.matchMedia("(orientation: landscape)").matches;
+	}
+
+	// Reveals the marker scene + its controls once the phone is confirmed landscape
+	function revealMarkerScene() {
+		if (rotateInstruction) rotateInstruction.setAttribute("hidden", "");
+		markerScene.removeAttribute("hidden");
+		markerBackButton.removeAttribute("hidden");
+	}
+
+	// While marker mode is active, if the user rotates back to portrait,
+	// re-show the same instruction and block the view until they rotate back
+	function handleOrientationWhileInMarkerMode() {
+		if (markerScene.hasAttribute("hidden")) return; // not in marker mode, ignore
+
+		if (isLandscape()) {
+			if (rotateInstruction) rotateInstruction.setAttribute("hidden", "");
+		} else {
+			if (rotateInstruction) rotateInstruction.removeAttribute("hidden");
+		}
+	}
+
+	window.matchMedia("(orientation: landscape)").addEventListener("change", handleOrientationWhileInMarkerMode);
 });
 
 document.addEventListener("DOMContentLoaded", () => {
