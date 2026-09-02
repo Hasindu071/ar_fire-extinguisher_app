@@ -1127,7 +1127,9 @@ AFRAME.registerComponent('mouse-rotate', {
         <!--Users view point-->
         <!-- position of the camera of the user 0 1.2 2 means X = 0 , Y = 1.2 , Z = 2 -->
         <a-camera
-            position="0 1.2 2">
+            position="0 1.2 2"
+            look-controls-enabled="false"
+            wasd-controls-enabled="false">
         </a-camera>
         
         <a-entity
@@ -1290,7 +1292,7 @@ AFRAME.registerComponent('mouse-rotate', {
             <a-asset-item id="waterExtinguisherMarkerless" src="assets/models/water_silinder.glb"></a-asset-item>
         </a-assets>
 
-        <a-camera position="0 1.2 0" look-controls wasd-controls></a-camera>
+        <a-camera position="0 1.2 0" look-controls-enabled="false" wasd-controls-enabled="false"></a-camera>
 
         <!-- Container for placed cylinders -->
         <a-entity id="cylinderContainer"></a-entity>
