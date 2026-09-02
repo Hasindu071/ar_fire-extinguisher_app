@@ -1702,23 +1702,22 @@ AFRAME.registerComponent('face-camera', {
                     const hit = hitTestResults[0];
                     const pose = hit.getPose(referenceSpace);
 
-                    reticle.visible = true;
+                    // Only show the green ring while nothing has been placed yet
+                    reticle.visible = !placedCylinder;
                     reticle.matrix.fromArray(pose.transform.matrix);
 
-                    // Keep the shadow-catcher plane locked to the detected surface
+                    // Keep tracking the surface and casting shadows even after placement,
+                    // just don't show the reticle ring anymore
                     shadowCatcher.position.setFromMatrixPosition(reticle.matrix);
                     shadowCatcher.visible = true;
 
-                    // Only overwrite the status text with "searching/found surface"
-                    // messages when nothing has been placed yet, so we don't stomp
-                    // on the "placed!" / "rotated!" messages once a model is down.
                     if (!placedCylinder) {
                         show("🟢 Surface detected — tap screen to place model");
                     }
                 } else {
                     reticle.visible = false;
-                    shadowCatcher.visible = false;
                     if (!placedCylinder) {
+                        shadowCatcher.visible = false;
                         show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
                     }
                 }
