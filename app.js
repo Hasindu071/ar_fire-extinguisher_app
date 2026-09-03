@@ -712,40 +712,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	resetFireState();
 	console.log("Marker tracking initialized");
-
-	// Position fire type label below the fire model
-	const updateFireLabelPosition = () => {
-		if (!fireTypeLabel.hasAttribute("hidden") && fireEntity.getAttribute("visible")) {
-			// Get the 3D position of the fire entity
-			const firePos = fireEntity.getAttribute("position");
-			const fireScale = fireEntity.getAttribute("scale");
-			
-			// Get camera and scene for 3D to 2D conversion
-			const scene = fireEntity.sceneEl;
-			const camera = scene.camera;
-			const canvas = scene.canvas;
-			
-			if (firePos && fireScale && camera && canvas) {
-				// Create a THREE.js Vector3 for the fire position
-				const vector = new THREE.Vector3(firePos.x, firePos.y - (fireScale.y || 1), firePos.z);
-				
-				// Project 3D position to 2D screen space
-				vector.project(camera);
-				
-				// Convert to screen coordinates
-				const screenX = (vector.x * 0.5 + 0.5) * canvas.clientWidth;
-				const screenY = (-vector.y * 0.5 + 0.5) * canvas.clientHeight;
-				
-				// Update label position
-				fireTypeLabel.style.position = "fixed";
-				fireTypeLabel.style.left = screenX + "px";
-				fireTypeLabel.style.top = (screenY + 40) + "px"; // Offset below fire
-				fireTypeLabel.style.transform = "translateX(-50%)";
-			}
-		}
-		requestAnimationFrame(updateFireLabelPosition);
-	};
-	updateFireLabelPosition();
 });
 
 // =====================
