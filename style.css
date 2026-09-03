@@ -64,15 +64,15 @@ a-scene canvas {
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 100;
-	font-size: 32px;
+	font-size: 14px;
 	font-weight: 700;
 	color: #ffffff;
 	background: rgba(0, 0, 0, 0.6);
-	padding: 16px 32px;
-	border-radius: 8px;
-	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	border: 2px solid #ff6b6b;
+	padding: 6px 12px;
+	border-radius: 4px;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+	border: 1px solid #ff6b6b;
 }
 
 .fire-type-label[hidden] {
@@ -85,12 +85,12 @@ a-scene canvas {
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 100;
-	font-size: 28px;
+	font-size: 12px;
 	font-weight: 700;
-	padding: 16px 32px;
-	border-radius: 8px;
-	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	padding: 6px 12px;
+	border-radius: 4px;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 	animation: slideIn 0.3s ease-out;
 }
 
