@@ -952,39 +952,6 @@ AFRAME.registerComponent('mouse-rotate', {
     }
 });
 
-// Stabilization component: smooths out tracking jitter for cleaner rendering
-AFRAME.registerComponent('stable-tracking', {
-    schema: {
-        smoothing: { type: 'number', default: 0.12 } // 0-1, higher = more smoothing
-    },
-
-    init: function() {
-        this.lastPosition = new THREE.Vector3();
-        this.lastQuaternion = new THREE.Quaternion();
-        this.firstFrame = true;
-    },
-
-    tick: function() {
-        const currentPos = this.el.object3D.position;
-        const currentQuat = this.el.object3D.quaternion;
-        
-        if (this.firstFrame) {
-            this.lastPosition.copy(currentPos);
-            this.lastQuaternion.copy(currentQuat);
-            this.firstFrame = false;
-            return;
-        }
-
-        // Smooth position changes
-        this.lastPosition.lerp(currentPos, this.data.smoothing);
-        this.el.object3D.position.copy(this.lastPosition);
-
-        // Smooth quaternion (rotation) changes using slerp
-        THREE.Quaternion.slerp(this.lastQuaternion, currentQuat, this.lastQuaternion, this.data.smoothing);
-        this.el.object3D.quaternion.copy(this.lastQuaternion);
-    }
-});
-
 // Face-camera component: counter-rotates the entity against the marker's tilt
 // so it always presents flat-on to the camera, regardless of marker angle
 AFRAME.registerComponent('face-camera', {
@@ -1137,9 +1104,9 @@ AFRAME.registerComponent('face-camera', {
     <!-- The container which holds the marker-based AR content -->
     <a-scene
         id="markerScene"
-        mindar-image="imageTargetSrc: ./fire_extinguishers.mind; maxTrack: 1; uiLoading: no; uiScanning: yes; uiError: yes;"
+        mindar-image="imageTargetSrc: ./fire_extinguishers.mind;"
         color-space="sRGB"
-        renderer="colorManagement: true; shadowMap.enabled: true; shadowMap.type: PCFSoftShadowMap; antialias: true; precision: highp;"
+        renderer="colorManagement: true; shadowMap.enabled: true; shadowMap.type: PCFSoftShadowMap;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         hidden>
@@ -1246,8 +1213,7 @@ AFRAME.registerComponent('face-camera', {
         
         <a-entity
         id="markerTarget"
-        mindar-image-target="targetIndex: 0"
-        stable-tracking="smoothing: 0.12">
+        mindar-image-target="targetIndex: 0">
 
         
                 <a-image
