@@ -1580,6 +1580,22 @@ AFRAME.registerComponent('face-camera', {
     let placedCylinder = null;
     let placedType = null;
 
+    // Ambient background sound for markerless mode — volume scales with
+    // how close the camera is to the placed cylinder
+    const backgroundSound = new Audio("assets/audio/background.wav");
+    backgroundSound.loop = true;
+    backgroundSound.volume = 0;
+
+    const BG_MIN_DIST = 0.4;  // at or below this distance -> full volume
+    const BG_MAX_DIST = 3.0;  // at or beyond this distance -> silent
+
+    function updateBackgroundVolume() {
+        if (!placedCylinder) return;
+        const dist = camera.position.distanceTo(placedCylinder.position);
+        const t = THREE.MathUtils.clamp((dist - BG_MIN_DIST) / (BG_MAX_DIST - BG_MIN_DIST), 0, 1);
+        backgroundSound.volume = 1 - t; // near = loud, far = quiet
+    }
+
     function loadCylinderModel(type) {
         if (cylinderTemplates[type] || cylinderTemplates[type] === "loading") return;
         cylinderTemplates[type] = "loading";
@@ -1611,6 +1627,11 @@ AFRAME.registerComponent('face-camera', {
         }
         if (resetButtonEl) resetButtonEl.hidden = true;
         hideCallout();
+
+        // Stop background sound when nothing is placed
+        backgroundSound.pause();
+        backgroundSound.volume = 0;
+
         show("🔵 Searching for a surface...<br>Move phone slowly over a floor/table");
     }
 
@@ -1801,6 +1822,12 @@ AFRAME.registerComponent('face-camera', {
                 if (resetButtonEl) resetButtonEl.hidden = false;
                 showCalloutForModel(placedCylinder, placedType);
 
+                // Start ambient background sound (user gesture already satisfied by this tap)
+                if (backgroundSound.paused) {
+                    backgroundSound.currentTime = 0;
+                    backgroundSound.play().catch(err => console.log("Background sound play error:", err));
+                }
+
                 show(`${placedType} extinguisher placed!<br>Tap again to rotate it.`);
                 return;
             }
@@ -1885,6 +1912,7 @@ AFRAME.registerComponent('face-camera', {
         }
 
         updateCalloutPositions();
+        updateBackgroundVolume();
         renderer.render(scene, camera);
     }
 
