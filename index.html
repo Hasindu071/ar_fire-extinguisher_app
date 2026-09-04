@@ -1949,8 +1949,6 @@ AFRAME.registerComponent('face-camera', {
     }
 
     // ARButton only wires up its real click handler after an internal async
-    // "immersive-ar" support check resolves. Poll briefly until it's ready
-    // (text becomes "START AR"), then click it for the user.
     function autoStartAR(arButton, attempt = 0) {
         if (arButton.textContent === "START AR") {
             arButton.click();
@@ -1987,8 +1985,6 @@ AFRAME.registerComponent('face-camera', {
         scene.add(hemiLight);
 
         // Key light: this is the one that actually casts shadows.
-        // GLB materials generally need a directional light too, unlike a
-        // plain MeshBasicMaterial box which ignores lighting entirely
         const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
         dirLight.position.set(1, 2, 1);
         dirLight.castShadow = true;
@@ -2031,9 +2027,6 @@ AFRAME.registerComponent('face-camera', {
         reticle.visible = false;
         scene.add(reticle);
 
-        // Invisible plane that only renders the shadows cast onto it, so
-        // placed extinguishers look grounded on the real-world floor/table
-        // instead of floating with no contact shadow.
         const shadowGeo = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
         const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
         shadowCatcher = new THREE.Mesh(shadowGeo, shadowMat);
@@ -2046,9 +2039,7 @@ AFRAME.registerComponent('face-camera', {
 
         preloadAllCylinderModels();
 
-        // Tap behavior:
-        //  - Nothing placed yet  -> place the currently selected type at the reticle
-        //  - Already placed      -> rotate that SAME model around Y (no new model spawned)
+
         const controller = renderer.xr.getController(0);
         controller.addEventListener("select", () => {
             if (!placedCylinder) {
@@ -2180,16 +2171,12 @@ AFRAME.registerComponent('face-camera', {
     }
 
     // Exposed entry point: called when the user selects Markerless AR.
-    // First time: builds the scene and auto-clicks the AR button.
-    // Subsequent times: just re-clicks the existing AR button.
     window.startWebXRExperience = function () {
         checkWebXR();
         if (!webxrInitialized) {
             webxrInitialized = true;
             initWebXRScene(); // first time: builds the scene, auto-clicks AR button
         } else if (arButtonRef) {
-            // Returning from a previous session — three.js resets the button back
-            // to "START AR" on sessionend, so just auto-click it again
             autoStartAR(arButtonRef);
         }
     };

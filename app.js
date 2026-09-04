@@ -100,7 +100,7 @@
 				this.el.setAttribute("shadow", "cast: true; receive: true");
 				this.isTransformed = true;
 				this.hasBeenUsed = true; // Mark as used
-				console.log("✓ TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
+				console.log("TRANSFORMED TO SPRAY FORM! Distance:", distance.toFixed(2));
 			}
 			
 			// Check if correct extinguisher is used on fire (only once)
@@ -118,7 +118,7 @@
 			this.el.setAttribute("shadow", "cast: true; receive: true");
 			this.isTransformed = false;
 			this.hasCheckedFire = false; // Reset flag when moving away
-			console.log("✓ REVERTED TO ORIGINAL! Distance:", distance.toFixed(2), "Scale:", this.originalScale);
+			console.log("REVERTED TO ORIGINAL! Distance:", distance.toFixed(2), "Scale:", this.originalScale);
 		}
 	},
 
@@ -154,10 +154,10 @@
 		console.log("===========================");
 		
 		if (broughtCylinderType === requiredExtinguisher) {
-			console.log("✓ CORRECT EXTINGUISHER! SUCCESS!");
+			console.log("CORRECT EXTINGUISHER! SUCCESS!");
 			this.showDoneMessage();
 		} else {
-			console.log("✗ WRONG EXTINGUISHER! MISMATCH!");
+			console.log("WRONG EXTINGUISHER! MISMATCH!");
 			this.showWrongMessage();
 		}
 	},
@@ -431,9 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 });
 
-// =====================
 // MODE SELECTION (Marker Based vs Markerless WebXR)
-// =====================
 document.addEventListener("DOMContentLoaded", () => {
 	const modeSelectScreen = document.getElementById("modeSelectScreen");
 	const markerModeButton = document.getElementById("markerModeButton");
@@ -494,7 +492,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 		
 		// Don't show webxrScene, just show the picker
-		// webxrScene.removeAttribute("hidden");
 		console.log("Markerless AR (WebXR) selected - showing picker");
 
 		// Note: WebXR will only start when user clicks "Start AR" button, not immediately
@@ -691,7 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	target.addEventListener("targetFound", () => {
-		console.log("✓✓✓ TARGET FOUND EVENT FIRED ✓✓✓");
+		console.log("TARGET FOUND EVENT FIRED");
 		fireEntity.setAttribute("visible", false);
 		startButton.hidden = false;
 		refreshButton.hidden = true;
@@ -699,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	target.addEventListener("targetLost", () => {
-		console.log("✗✗✗ TARGET LOST EVENT FIRED ✗✗✗");
+		console.log("TARGET LOST EVENT FIRED");
 		resetFireState();
 	});
 
@@ -849,9 +846,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Update instruction
 		const remaining = 4 - placedCylinders.length;
 		if (remaining > 0) {
-			placementInstruction.textContent = `Placed ${placedCylinders.length}/4 ✓ - Tap to place ${remaining} more`;
+			placementInstruction.textContent = `Placed ${placedCylinders.length}/4 - Tap to place ${remaining} more`;
 		} else {
-			placementInstruction.textContent = "✓ All 4 fire extinguishers placed! 🎉";
+			placementInstruction.textContent = "All 4 fire extinguishers placed! 🎉";
 			setTimeout(() => {
 				placementInstruction.textContent = "You can move your camera around to view them";
 			}, 2000);
