@@ -913,6 +913,192 @@
                 opacity: 1;
             }
         }
+
+        /* Credits Section */
+        #creditsButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 10px 16px;
+            background: rgb(207, 30, 30);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 100, 100, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #creditsButton[hidden] {
+            display: none !important;
+        }
+
+        #creditsButton:hover {
+            background: rgba(255, 100, 100, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 100, 100, 0.5);
+        }
+
+        #creditsButton:active {
+            transform: translateY(0);
+        }
+
+        /* Credits Modal */
+        #creditsModal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #creditsModal[hidden] {
+            display: none;
+        }
+
+        .credits-content {
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(60, 0, 0, 0.9) 100%);
+            border: 2px solid rgba(255, 100, 100, 0.6);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 100, 100, 0.3);
+            animation: slideInCredits 0.4s ease-out;
+        }
+
+        @keyframes slideInCredits {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .credits-content h2 {
+            color: #ffcc00;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .credits-content h3 {
+            color: #ff9999;
+            font-size: 14px;
+            margin: 20px 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 100, 100, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .credits-content h3:first-of-type {
+            margin-top: 0;
+        }
+
+        .credit-item {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            margin-bottom: 14px;
+            line-height: 1.5;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .credit-item:hover {
+            background: rgba(255, 100, 100, 0.1);
+            transform: translateX(4px);
+        }
+
+        .credit-item a {
+            color: #ffcc00;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .credit-item a:hover {
+            color: #ffff00;
+            text-decoration: underline;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
+        }
+
+        .credit-item strong {
+            color: #ff9999;
+            font-weight: 700;
+        }
+
+        .credits-license {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+            margin-top: 6px;
+            padding-left: 12px;
+            border-left: 2px solid rgba(255, 100, 100, 0.3);
+            font-style: italic;
+        }
+
+        .credits-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 100, 100, 0.8);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .credits-close:hover {
+            background: rgba(255, 100, 100, 1);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Scrollbar styling for credits modal */
+        .credits-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .credits-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .credits-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 100, 100, 0.6);
+            border-radius: 4px;
+        }
+
+        .credits-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 100, 100, 0.9);
+        }
     </style>
 </head>
 
@@ -1036,6 +1222,83 @@ AFRAME.registerComponent('face-camera', {
                 <button class="download-target-btn" title="Download Target Photo">
                     Download Target
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Button -->
+    <button id="creditsButton" aria-label="View Credits" hidden>Credits</button>
+
+    <!-- Credits Modal -->
+    <div id="creditsModal" hidden>
+        <button class="credits-close" aria-label="Close credits">✕</button>
+        <div class="credits-content">
+            <h2>🔥 Credits 🔥</h2>
+            
+            <h3>3D Models</h3>
+            <div class="credit-item">
+                <strong>Fire Extinguisher</strong> by dook [CC-BY]
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/LtrzDvRya9" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Bonfire</strong> by Quaternius
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/Azj9hJwwwG" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Fire</strong> by Jakob Hippe [CC-BY]
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/1QpMTUO7P-G" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Campfire</strong> by Poly by Google [CC-BY]
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/0vzzmM-t8CP" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Fire Extinguisher Pack</strong> by arloopa
+                <div class="credits-license">Creative Commons Attribution</div>
+                <a href="https://sketchfab.com/3d-models/fire-extinguisher-pack-90c0f0e6db5a4381aa1c7f856fc1593b" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Erlenmeyer Flask</strong> by Poly by Google [CC-BY]
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/eqIGxcsBe1V" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Cumulus Clouds 5</strong> by S. Paul Michael [CC-BY]
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/25RmW99gwuv" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Gas Can</strong> by Quaternius
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/eS1OXGo51c" target="_blank">View Model →</a>
+            </div>
+            
+            <div class="credit-item">
+                <strong>Power Box</strong> by J-Toastie [CC-BY]
+                <div class="credits-license">via Poly Pizza</div>
+                <a href="https://poly.pizza/m/WFVjj4vnGg" target="_blank">View Model →</a>
+            </div>
+            
+            <h3>Asset Platforms</h3>
+            <div class="credit-item">
+                All models sourced from <a href="https://poly.pizza/" target="_blank">Poly Pizza</a> and <a href="https://sketchfab.com/" target="_blank">Sketchfab</a>
+                <div class="credits-license">Licensed under Creative Commons Attribution</div>
+            </div>
+            
+            <h3>Special Thanks</h3>
+            <div class="credit-item">
+                Thank you to all the talented creators who contributed their work to make this AR Fire Extinguisher experience possible.
             </div>
         </div>
     </div>
@@ -1930,6 +2193,98 @@ AFRAME.registerComponent('face-camera', {
             autoStartAR(arButtonRef);
         }
     };
+    </script>
+
+    <!-- Credits Modal Script -->
+    <script>
+        // Credits Modal functionality
+        const creditsButton = document.getElementById('creditsButton');
+        const creditsModal = document.getElementById('creditsModal');
+        const creditsClose = document.querySelector('.credits-close');
+        const modeSelectScreen = document.getElementById('modeSelectScreen');
+        
+        if (creditsButton && creditsModal) {
+            // Open credits modal
+            creditsButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                creditsModal.removeAttribute('hidden');
+            });
+            
+            // Close credits modal with close button
+            if (creditsClose) {
+                creditsClose.addEventListener('click', () => {
+                    creditsModal.setAttribute('hidden', '');
+                });
+            }
+            
+            // Close credits modal when clicking outside the content
+            creditsModal.addEventListener('click', (e) => {
+                if (e.target === creditsModal) {
+                    creditsModal.setAttribute('hidden', '');
+                }
+            });
+            
+            // Close credits modal with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !creditsModal.hasAttribute('hidden')) {
+                    creditsModal.setAttribute('hidden', '');
+                }
+            });
+            
+            // Show/hide credits button based on active page
+            function updateCreditsButtonVisibility() {
+                const isModeSelectVisible = !modeSelectScreen.hasAttribute('hidden');
+                
+                if (isModeSelectVisible) {
+                    creditsButton.removeAttribute('hidden');
+                } else {
+                    creditsButton.setAttribute('hidden', '');
+                    // Close modal if it's open when leaving home page
+                    if (!creditsModal.hasAttribute('hidden')) {
+                        creditsModal.setAttribute('hidden', '');
+                    }
+                }
+            }
+            
+            // Listen for when mode buttons are clicked
+            const markerModeButton = document.getElementById('markerModeButton');
+            const markerlessModeButton = document.getElementById('markerlessModeButton');
+            
+            if (markerModeButton) {
+                markerModeButton.addEventListener('click', () => {
+                    setTimeout(updateCreditsButtonVisibility, 100);
+                });
+            }
+            
+            if (markerlessModeButton) {
+                markerlessModeButton.addEventListener('click', () => {
+                    setTimeout(updateCreditsButtonVisibility, 100);
+                });
+            }
+            
+            // Listen for back buttons
+            const markerBackButton = document.getElementById('markerBackButton');
+            const markerlessBackButton = document.getElementById('markerlessBackButton');
+            
+            if (markerBackButton) {
+                markerBackButton.addEventListener('click', () => {
+                    setTimeout(updateCreditsButtonVisibility, 100);
+                });
+            }
+            
+            if (markerlessBackButton) {
+                markerlessBackButton.addEventListener('click', () => {
+                    setTimeout(updateCreditsButtonVisibility, 100);
+                });
+            }
+            
+            // Initial check
+            updateCreditsButtonVisibility();
+            
+            // Also watch for changes to modeSelectScreen visibility
+            const observer = new MutationObserver(updateCreditsButtonVisibility);
+            observer.observe(modeSelectScreen, { attributes: true, attributeFilter: ['hidden'] });
+        }
     </script>
 
     <script src="app.js"></script>
