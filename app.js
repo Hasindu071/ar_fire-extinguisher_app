@@ -400,6 +400,29 @@
 // TARGET PHOTO DOWNLOAD
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
+	// Mobile device orientation correction
+	function applyMobileOrientationFix() {
+		const markerTarget = document.getElementById("markerTarget");
+		if (!markerTarget) return;
+		
+		// Detect if on mobile device
+		const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		
+		if (isMobile) {
+			// Apply rotation fix for mobile devices
+			markerTarget.setAttribute("rotation", "0 0 90");
+			console.log("Mobile device detected - applying orientation correction");
+		}
+	}
+	
+	// Apply fix when page loads
+	applyMobileOrientationFix();
+	
+	// Also apply on orientation change
+	window.addEventListener("orientationchange", () => {
+		setTimeout(applyMobileOrientationFix, 100);
+	});
+
 	const downloadTargetBtn = document.querySelector(".download-target-btn");
 	const targetImage = document.querySelector(".target-photo-image");
 
